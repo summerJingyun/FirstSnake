@@ -20,7 +20,8 @@
     var size = 12;
     snakeBody = new Array();
 
-    for (var i = 0; i < size; i++) {
+    for (var i = 0; i < size; i++)
+    {
         snakeBody[i] = new Array();
         snakeBody[i][0] = headX - i * gridSize;
         snakeBody[i][1] = headY;
@@ -42,15 +43,19 @@
 
     document.onkeydown = onkeydown;
 
-    function move() {
-        if (direction != Direction.none) {
-            if (hasTouchedWall()) {
+    function move()
+    {
+        if (direction != Direction.none)
+        {
+            if (hasTouchedWall())
+            {
                 alert("touch wall, game over");
                 clearInterval(moveTimer);
                 return;
             }
 
-            if (needReverse()) {
+            if (needReverse())
+            {
                 direction = directionPrevious;
             }
 
@@ -62,13 +67,15 @@
             var oldLastY = snakeBody[snakeBody.length - 1][1];
             /* var newHead=new Array(snakeBody[0][0],snakeBody[0][1]);*/
 
-            for (var i = snakeBody.length - 1; i >= 1; i--) {
+            for (var i = snakeBody.length - 1; i >= 1; i--)
+            {
                 snakeBody[i][0] = snakeBody[i - 1][0];
                 snakeBody[i][1] = snakeBody[i - 1][1];
             }
 
 
-            switch (direction) {
+            switch (direction)
+            {
                 case Direction.left:
                     /*newHead[0]=newHead[0]-1*gridSize;*/
                     newHeadX = newHeadX - 1 * gridSize;
@@ -93,7 +100,8 @@
 
             directionPrevious = direction;
 
-            if (hasAteFood()) {
+            if (hasAteFood())
+            {
                 // snakeBody  add 1
                 snakeBody[snakeBody.length] = new Array(oldLastX, oldLastY);
                 drawDot(snakeBody[snakeBody.length - 1][0], snakeBody[snakeBody.length - 1][1], "black");
@@ -102,7 +110,8 @@
                 spawnFood();
             }
 
-            if (headTouchedBody()) {
+            if (headTouchedBody())
+            {
                 alert("touch body, game over");
                 clearInterval(moveTimer);
                 return;
@@ -110,13 +119,15 @@
         }
     }
 
-    function hasAteFood() {
+    function hasAteFood()
+    {
         return (snakeBody[0][0] == foodX) && (snakeBody[0][1] == foodY);
     }
 
     var hasSetInternal = false;
 
-    function onkeydown() {
+    function onkeydown()
+    {
         key = event.keyCode;
         // console.log(key);
         if (!hasSetInternal) //第一次按下任意键生成定时器，且只会生成一个定时器，后面再按不再生成新的定时器
@@ -127,7 +138,8 @@
             return;
         }
 
-        switch (key) {
+        switch (key)
+        {
             case 65: //left
                 direction = Direction.left;
                 break;
@@ -141,16 +153,23 @@
                 direction = Direction.down;
                 break;
         }
+
+        for (var i = 0; i < dir.length; i++)
+        {
+            dir[i]
+        }
     }
 
-    function drawDot(x, y, color) {
+    function drawDot(x, y, color)
+    {
         ctx.fillStyle = color;
         ctx.fillRect(x, y, gridSize, gridSize);
     }
 
     var foodX, foodY;
     //生成随机食物
-    function spawnFood() {
+    function spawnFood()
+    {
         var lengthX = canvasWidth / gridSize;
         var lengthY = canvasHeight / gridSize;
         foodX = parseInt(Math.random() * lengthX) * gridSize;
@@ -161,10 +180,12 @@
 
     function needReverse() //判断是否需要反向走才能正常继续
     {
-        if (direction != Direction.none) {
+        if (direction != Direction.none)
+        {
             var newHeadX = snakeBody[0][0];
             var newHeadY = snakeBody[0][1];
-            switch (direction) {
+            switch (direction)
+            {
                 case Direction.left:
                     /*newHead[0]=newHead[0]-1*gridSize;*/
                     newHeadX = newHeadX - 1 * gridSize;
@@ -189,11 +210,13 @@
 
     function hasTouchedWall() //判断是否撞墙，可以贴墙走，不能撞墙
     {
-        if (direction != Direction.none) {
+        if (direction != Direction.none)
+        {
             var touchedWall = false;
             var newHeadX = snakeBody[0][0];
             var newHeadY = snakeBody[0][1];
-            switch (direction) {
+            switch (direction)
+            {
                 case Direction.left:
                     /*newHead[0]=newHead[0]-1*gridSize;*/
                     newHeadX = newHeadX - 1 * gridSize;
@@ -217,17 +240,21 @@
                 newHeadY < 0 ||
                 (newHeadX > canvasWidth - gridSize) ||
                 (newHeadY > canvasHeight - gridSize)
-            ) {
+            )
+            {
                 touchedWall = true;
             }
             return touchedWall;
         }
     }
 
-    function headTouchedBody() {
+    function headTouchedBody()
+    {
         var touchedBody = false;
-        for (var i = 2; i < snakeBody.length; i++) {
-            if ((snakeBody[0][0] == snakeBody[i][0]) && (snakeBody[0][1] == snakeBody[i][1])) {
+        for (var i = 2; i < snakeBody.length; i++)
+        {
+            if ((snakeBody[0][0] == snakeBody[i][0]) && (snakeBody[0][1] == snakeBody[i][1]))
+            {
                 touchedBody = true;
                 break;
             }
