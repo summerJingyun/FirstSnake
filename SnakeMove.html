@@ -7,19 +7,18 @@ Your browser does not support the HTML5 canvas tag.
 </canvas>
 
 <script type="text/javascript">
-var moveSpeed = 100;
-
 var c=document.getElementById("myCanvas");
 var ctx=c.getContext("2d");
 var canvasWidth=400;
 var canvasHeight=400;
-ctx.fillStyle="gray";
+var moveSpeed=100;
+ctx.fillStyle="grey";
 ctx.fillRect(0,0,canvasWidth,canvasHeight);
 
 var gridSize=10;
 var headX=200;
 var headY=200;
-var size=6;
+var size=12;
 snakeBody=new Array();
 
 for(var i=0;i<size;i++)
@@ -39,9 +38,10 @@ Direction.none=4;
 var moveTimer;
 spawnFood();
 
+var directionPrevious=Direction.none;
+
 var direction=Direction.right; // Under initial codition,it won't move
 
-// var moveTimer=setInterval ("move()",500);
 document.onkeydown=onkeydown;
 
 function move()
@@ -56,12 +56,11 @@ function move()
         }
 
         if(needReverse())
-        {
-            // snakeBody.reverse();   //禁止反向走
-            return;
+        { 
+            direction=directionPrevious;      
         }
 
-        drawDot(snakeBody[snakeBody.length-1][0],snakeBody[snakeBody.length-1][1],"gray");
+        drawDot(snakeBody[snakeBody.length-1][0],snakeBody[snakeBody.length-1][1],"grey");
 
         var newHeadX=snakeBody[0][0];
         var newHeadY=snakeBody[0][1];
@@ -99,6 +98,8 @@ function move()
         snakeBody[0][0]=newHeadX;
         snakeBody[0][1]=newHeadY;
         drawDot(snakeBody[0][0],snakeBody[0][1],"black");
+
+        directionPrevious=direction;
 
         if (hasAteFood())
         {
@@ -199,7 +200,7 @@ function needReverse()   //判断是否需要反向走才能正常继续
         }
         return (newHeadX==snakeBody[1][0]&&newHeadY==snakeBody[1][1]);
     }
-    
+
 }
 
 function hasTouchedWall()   //判断是否撞墙，可以贴墙走，不能撞墙
@@ -245,7 +246,7 @@ function hasTouchedWall()   //判断是否撞墙，可以贴墙走，不能撞�
 function headTouchedBody()
 {
     var touchedBody=false;
-    for(var i=2;i<=snakeBody.length;i++)
+    for(var i=2;i<snakeBody.length;i++)
     {
         if((snakeBody[0][0]==snakeBody[i][0])&&(snakeBody[0][1]==snakeBody[i][1]))
         {
