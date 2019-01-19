@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<body>
+<canvas id="myCanvas" width="400" height="400"
+style="border:1px solid #c3c3c3;">
+Your browser does not support the HTML5 canvas tag.
+</canvas>
+
+<script type="text/javascript">
+var c=document.getElementById("myCanvas");
+var ctx=c.getContext("2d");
+var canvasWidth=400;
+var canvasHeight=400;
+ctx.fillStyle="yellow";
+ctx.fillRect(0,0,canvasWidth,canvasHeight);
+
+var gridSize=10;
+var headX=200;
+var headY=200;
+var size=6;
+snakeBody=new Array();
+
+for(var i=0;i<size;i++)
+{
+    snakeBody[i]=new Array();
+    snakeBody[i][0]=headX-i*gridSize;
+    snakeBody[i][1]=headY;
+    drawDot(snakeBody[i][0],snakeBody[i][1],"black");
+}
+
+var Direction={};
+Direction.up=0;
+Direction.down=1;
+Direction.left=2;
+Direction.right=3;
+Direction.none=4;
+var moveTimer;
+spawnFood();
+
+var direction=Direction.right; // Under initial codition,it won't move
+
+// var moveTimer=setInterval ("move()",500);
+document.onkeydown=onkeydown;
+
+function move()
+{   
+    if (direction!=Direction.none)
+    {
+        if(hasTouchedWall())
+        {
+            alert("touch wall, game over");
+            clearInterval(moveTimer);
+            return;
+        }
+
+        if(needReverse())
+        {
+            // snakeBody.reverse();   //禁止反向走
+            return;
+        }
+
+        drawDot(snakeBody[snakeBody.length-1][0],snakeBody[snakeBody.length-1][1],"yellow");
+
+        var newHeadX=snakeBody[0][0];
+        var newHeadY=snakeBody[0][1];
+        var oldLastX=snakeBody[snakeBody.length-1][0];
+        var oldLastY=snakeBody[snakeBody.length-1][1];
+       /* var newHead=new Array(snakeBody[0][0],snakeBody[0][1]);*/
+
+        for (var i = snakeBody.length-1; i>=1;i--) 
+        {
+            snakeBody[i][0]=snakeBody[i-1][0];
+            snakeBody[i][1]=snakeBody[i-1][1];
+        }
+
+
+        switch(direction)
+        {
+            case Direction.left:
+            /*newHead[0]=newHead[0]-1*gridSize;*/
+            newHeadX=newHeadX-1*gridSize;
+            break;
+            case Direction.up:
+            /*newHead[1]=newHead[1]-1*gridSize;*/
+            newHeadY=newHeadY-1*gridSize;
+            break;
+            case Direction.right:
+            /*newHead[0]=newHead[0]+1*gridSize;*/
+            newHeadX=newHeadX+1*gridSize;
+            break;
+            case Direction.down:
+            /*newHead[1]=newHead[1]+1*gridSize;*/
+            newHeadY=newHeadY+1*gridSize;
+            break;
+        }
+        
+        snakeBody[0][0]=newHeadX;
+        snakeBody[0][1]=newHeadY;
+        drawDot(snakeBody[0][0],snakeBody[0][1],"black");
+
+        if (hasAteFood())
+        {
+            // snakeBody  add 1
+            snakeBody[snakeBody.length]= new Array(oldLastX,oldLastY);
+            drawDot(snakeBody[snakeBody.length-1][0],snakeBody[snakeBody.length-1][1],"black"); 
+
+            //spawn food again
+            spawnFood();
+        }
+
+        if (headTouchedBody())
+        {
+            alert("touch body, game over");
+            clearInterval(moveTimer);
+            return;
+        }
+    }
+}
+
+function hasAteFood()
+{
+    return (snakeBody[0][0]==foodX)&&(snakeBody[0][1]==foodY);
+}
+
+var hasSetInternal=false;
+function onkeydown()
+{
+    key = event.keyCode;
+    // console.log(key);
+    if(!hasSetInternal)               //第一次按下任意键生成定时器，且只会生成一个定时器，后面再按不再生成新的定时器
+    {
+        moveTimer=setInterval ("move()",100);
+        direction=Direction.right;     //第一次按下任意键都向右走，后面根据按键正常上下左右走
+        hasSetInternal=true;
+        return;
+    }
+
+    switch(key)
+    {
+        case 65: //left
+            direction=Direction.left;
+        break;
+        case 87: //up
+            direction=Direction.up; 
+        break;
+        case 68: //right
+            direction=Direction.right;
+        break;
+        case 83: //down
+            direction=Direction.down;
+        break;
+    }
+}
+
+function drawDot(x,y,color)
+{
+    ctx.fillStyle=color;
+    ctx.fillRect(x,y,gridSize,gridSize);
+}
+
+var foodX,foodY;
+//生成随机食物
+function spawnFood()
+{
+    var lengthX=canvasWidth/gridSize;
+    var lengthY=canvasHeight/gridSize;
+    foodX=parseInt(Math.random()*lengthX)*gridSize;
+    foodY=parseInt(Math.random()*lengthY)*gridSize;
+    drawDot(foodX,foodY,"red");
+}
+
+
+function needReverse()   //判断是否需要反向走才能正常继续
+{
+    if (direction!=Direction.none)
+    {
+        var newHeadX=snakeBody[0][0];
+        var newHeadY=snakeBody[0][1];
+         switch(direction)
+        {
+            case Direction.left:
+            /*newHead[0]=newHead[0]-1*gridSize;*/
+            newHeadX=newHeadX-1*gridSize;
+            break;
+            case Direction.up:
+            /*newHead[1]=newHead[1]-1*gridSize;*/
+            newHeadY=newHeadY-1*gridSize;
+            break;
+            case Direction.right:
+            /*newHead[0]=newHead[0]+1*gridSize;*/
+            newHeadX=newHeadX+1*gridSize;
+            break;
+            case Direction.down:
+            /*newHead[1]=newHead[1]+1*gridSize;*/
+            newHeadY=newHeadY+1*gridSize;
+            break;
+        }
+        return (newHeadX==snakeBody[1][0]&&newHeadY==snakeBody[1][1]);
+    }
+    
+}
+
+function hasTouchedWall()   //判断是否撞墙，可以贴墙走，不能撞墙
+{
+    if (direction!=Direction.none)
+    {
+        var touchedWall=false;
+        var newHeadX=snakeBody[0][0];
+        var newHeadY=snakeBody[0][1];
+         switch(direction)
+        {
+            case Direction.left:
+            /*newHead[0]=newHead[0]-1*gridSize;*/
+            newHeadX=newHeadX-1*gridSize;
+            break;
+            case Direction.up:
+            /*newHead[1]=newHead[1]-1*gridSize;*/
+            newHeadY=newHeadY-1*gridSize;
+            break;
+            case Direction.right:
+            /*newHead[0]=newHead[0]+1*gridSize;*/
+            newHeadX=newHeadX+1*gridSize;
+            break;
+            case Direction.down:
+            /*newHead[1]=newHead[1]+1*gridSize;*/
+            newHeadY=newHeadY+1*gridSize;
+            break;
+        }
+
+        if(
+            newHeadX<0 ||
+            newHeadY<0 ||
+            (newHeadX>canvasWidth-gridSize) ||
+            (newHeadY>canvasHeight-gridSize)
+            )
+        {
+            touchedWall=true;
+        }
+        return touchedWall;
+    }
+}
+
+function headTouchedBody()
+{
+    var touchedBody=false;
+    for(var i=2;i<=snakeBody.length;i++)
+    {
+        if((snakeBody[0][0]==snakeBody[i][0])&&(snakeBody[0][1]==snakeBody[i][1]))
+        {
+            touchedBody=true;
+            break;
+        }
+    }
+    return touchedBody;
+}
+
+</script>
+</body>
+</html>
