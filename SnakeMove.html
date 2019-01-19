@@ -7,11 +7,13 @@ Your browser does not support the HTML5 canvas tag.
 </canvas>
 
 <script type="text/javascript">
+var moveSpeed = 100;
+
 var c=document.getElementById("myCanvas");
 var ctx=c.getContext("2d");
 var canvasWidth=400;
 var canvasHeight=400;
-ctx.fillStyle="yellow";
+ctx.fillStyle="gray";
 ctx.fillRect(0,0,canvasWidth,canvasHeight);
 
 var gridSize=10;
@@ -59,7 +61,7 @@ function move()
             return;
         }
 
-        drawDot(snakeBody[snakeBody.length-1][0],snakeBody[snakeBody.length-1][1],"yellow");
+        drawDot(snakeBody[snakeBody.length-1][0],snakeBody[snakeBody.length-1][1],"gray");
 
         var newHeadX=snakeBody[0][0];
         var newHeadY=snakeBody[0][1];
@@ -129,7 +131,7 @@ function onkeydown()
     // console.log(key);
     if(!hasSetInternal)               //第一次按下任意键生成定时器，且只会生成一个定时器，后面再按不再生成新的定时器
     {
-        moveTimer=setInterval ("move()",100);
+        moveTimer=setInterval ("move()",moveSpeed);
         direction=Direction.right;     //第一次按下任意键都向右走，后面根据按键正常上下左右走
         hasSetInternal=true;
         return;
