@@ -78,6 +78,8 @@
     function addBody(body, lastBd)
     {
         body[body.length] = new Array(lastBd.lastBodyX, lastBd.lastBodyY);
+        // body[body.length] = lastBd;     引用传递
+
         drawDot(body[body.length - 1][0], body[body.length - 1][1], "black");
 
     }
@@ -158,6 +160,10 @@
 
     function rememberLastBody(body)
     {
+        // var l = new Array();        
+        // l[0] = body[body.length - 1][0];
+        // l[1] = body[body.length - 1][1];
+        // return l;
         return {
             lastBodyX: body[body.length - 1][0],
             lastBodyY: body[body.length - 1][1]
