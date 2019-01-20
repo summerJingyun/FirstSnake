@@ -10,7 +10,7 @@
     var ctx = c.getContext("2d");
     var canvasWidth = 400;
     var canvasHeight = 400;
-    var moveSpeed = 100;
+    var moveSpeed = 500;
     ctx.fillStyle = "grey";
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
@@ -50,6 +50,13 @@
             if (hasTouchedWall())
             {
                 alert("touch wall, game over");
+                clearInterval(moveTimer);
+                return;
+            }
+
+            if (headTouchedBody())
+            {
+                alert("touch body, game over");
                 clearInterval(moveTimer);
                 return;
             }
@@ -110,12 +117,6 @@
                 spawnFood();
             }
 
-            if (headTouchedBody())
-            {
-                alert("touch body, game over");
-                clearInterval(moveTimer);
-                return;
-            }
         }
     }
 
