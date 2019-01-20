@@ -11,37 +11,37 @@
     var canvasWidth = 400;
     var canvasHeight = 400;
     var moveSpeed = 100;
-    ctx.fillStyle = "grey";
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
     var gridSize = 10;
-    var headX = 200;
-    var headY = 200;
     var size = 6;
-    snakeBody = new Array();
-
-    for (var i = 0; i < size; i++)
-    {
-        snakeBody[i] = new Array();
-        snakeBody[i][0] = headX - i * gridSize;
-        snakeBody[i][1] = headY;
-        drawDot(snakeBody[i][0], snakeBody[i][1], "black");
-    }
-
     var Direction = {};
     Direction.up = 0;
     Direction.down = 1;
     Direction.left = 2;
     Direction.right = 3;
     Direction.none = 4;
+    var headX = 200;
+    var headY = 200;
     var moveTimer;
-    spawnFood();
-
     var directionPrevious = Direction.none;
-
     var direction = Direction.right; // Under initial codition,it won't move
-
     document.onkeydown = onkeydown;
+    start();
+
+    function start()
+    {
+        ctx.fillStyle = "grey";
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        snakeBody = new Array();
+
+        for (var i = 0; i < size; i++)
+        {
+            snakeBody[i] = new Array();
+            snakeBody[i][0] = headX - i * gridSize;
+            snakeBody[i][1] = headY;
+            drawDot(snakeBody[i][0], snakeBody[i][1], "black");
+        }
+        spawnFood();
+    }
 
     function move()
     {
@@ -51,6 +51,10 @@
             {
                 alert("touch wall, game over");
                 clearInterval(moveTimer);
+
+                // return;
+                start();
+                hasSetInternal = false;
                 return;
             }
 
@@ -58,6 +62,9 @@
             {
                 alert("touch body, game over");
                 clearInterval(moveTimer);
+                // return;
+                start();
+                hasSetInternal = false;
                 return;
             }
 
@@ -123,6 +130,7 @@
     function onkeydown()
     {
         key = event.keyCode;
+        console.log(key);
         if (!hasSetInternal) //第一次按下任意键生成定时器，且只会生成一个定时器，后面再按不再生成新的定时器
         {
             moveTimer = setInterval("move()", moveSpeed);
