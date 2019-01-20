@@ -10,14 +10,14 @@
     var ctx = c.getContext("2d");
     var canvasWidth = 400;
     var canvasHeight = 400;
-    var moveSpeed = 500;
+    var moveSpeed = 100;
     ctx.fillStyle = "grey";
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
     var gridSize = 10;
     var headX = 200;
     var headY = 200;
-    var size = 12;
+    var size = 6;
     snakeBody = new Array();
 
     for (var i = 0; i < size; i++)
@@ -63,7 +63,7 @@
 
             if (needReverse())
             {
-                direction = directionPrevious;
+                direction = directionPrevious; //判断当按下按键，若蛇朝该方向走会踩到蛇身时，不让它朝此方向走，而继续按照原来的方向走
             }
 
             drawDot(snakeBody[snakeBody.length - 1][0], snakeBody[snakeBody.length - 1][1], "grey");
@@ -72,7 +72,6 @@
             var newHeadY = snakeBody[0][1];
             var oldLastX = snakeBody[snakeBody.length - 1][0];
             var oldLastY = snakeBody[snakeBody.length - 1][1];
-            /* var newHead=new Array(snakeBody[0][0],snakeBody[0][1]);*/
 
             for (var i = snakeBody.length - 1; i >= 1; i--)
             {
@@ -80,23 +79,18 @@
                 snakeBody[i][1] = snakeBody[i - 1][1];
             }
 
-
             switch (direction)
             {
                 case Direction.left:
-                    /*newHead[0]=newHead[0]-1*gridSize;*/
                     newHeadX = newHeadX - 1 * gridSize;
                     break;
                 case Direction.up:
-                    /*newHead[1]=newHead[1]-1*gridSize;*/
                     newHeadY = newHeadY - 1 * gridSize;
                     break;
                 case Direction.right:
-                    /*newHead[0]=newHead[0]+1*gridSize;*/
                     newHeadX = newHeadX + 1 * gridSize;
                     break;
                 case Direction.down:
-                    /*newHead[1]=newHead[1]+1*gridSize;*/
                     newHeadY = newHeadY + 1 * gridSize;
                     break;
             }
@@ -116,7 +110,6 @@
                 //spawn food again
                 spawnFood();
             }
-
         }
     }
 
@@ -130,7 +123,6 @@
     function onkeydown()
     {
         key = event.keyCode;
-        // console.log(key);
         if (!hasSetInternal) //第一次按下任意键生成定时器，且只会生成一个定时器，后面再按不再生成新的定时器
         {
             moveTimer = setInterval("move()", moveSpeed);
@@ -154,11 +146,6 @@
                 direction = Direction.down;
                 break;
         }
-
-        for (var i = 0; i < dir.length; i++)
-        {
-            dir[i]
-        }
     }
 
     function drawDot(x, y, color)
@@ -168,16 +155,28 @@
     }
 
     var foodX, foodY;
-    //生成随机食物
+    //生成随机食物,判断食物是否压到身子，压到则重新生成
     function spawnFood()
     {
         var lengthX = canvasWidth / gridSize;
         var lengthY = canvasHeight / gridSize;
-        foodX = parseInt(Math.random() * lengthX) * gridSize;
-        foodY = parseInt(Math.random() * lengthY) * gridSize;
+        var isSuccess = false;
+        while (!isSuccess)
+        {
+            foodX = parseInt(Math.random() * lengthX) * gridSize;
+            foodY = parseInt(Math.random() * lengthY) * gridSize;
+            isSuccess = true;
+            for (var i = 0; i < snakeBody.length; i++)
+            {
+                if ((foodX == snakeBody[i][0]) && (foodY == snakeBody[i][1]))
+                {
+                    isSuccess = false;
+                }
+            }
+        }
+
         drawDot(foodX, foodY, "red");
     }
-
 
     function needReverse() //判断是否需要反向走才能正常继续
     {
@@ -188,19 +187,15 @@
             switch (direction)
             {
                 case Direction.left:
-                    /*newHead[0]=newHead[0]-1*gridSize;*/
                     newHeadX = newHeadX - 1 * gridSize;
                     break;
                 case Direction.up:
-                    /*newHead[1]=newHead[1]-1*gridSize;*/
                     newHeadY = newHeadY - 1 * gridSize;
                     break;
                 case Direction.right:
-                    /*newHead[0]=newHead[0]+1*gridSize;*/
                     newHeadX = newHeadX + 1 * gridSize;
                     break;
                 case Direction.down:
-                    /*newHead[1]=newHead[1]+1*gridSize;*/
                     newHeadY = newHeadY + 1 * gridSize;
                     break;
             }
@@ -219,19 +214,15 @@
             switch (direction)
             {
                 case Direction.left:
-                    /*newHead[0]=newHead[0]-1*gridSize;*/
                     newHeadX = newHeadX - 1 * gridSize;
                     break;
                 case Direction.up:
-                    /*newHead[1]=newHead[1]-1*gridSize;*/
                     newHeadY = newHeadY - 1 * gridSize;
                     break;
                 case Direction.right:
-                    /*newHead[0]=newHead[0]+1*gridSize;*/
                     newHeadX = newHeadX + 1 * gridSize;
                     break;
                 case Direction.down:
-                    /*newHead[1]=newHead[1]+1*gridSize;*/
                     newHeadY = newHeadY + 1 * gridSize;
                     break;
             }
