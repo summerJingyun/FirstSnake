@@ -10,7 +10,7 @@
     var ctx = c.getContext("2d");
     var canvasWidth = 400;
     var canvasHeight = 400;
-    var moveSpeed = 500;
+    var moveSpeed = 300;
     var gridSize = 10;
     var size = 10;
     var Direction = {};
@@ -25,8 +25,16 @@
     var directionPrevious = Direction.none;
     var direction = Direction.right; // Under initial codition,it won't move
 
+    // ctx.fillStyle = "red";
+    // ctx.font = "bold 26px"; //字体样式
+    // ctx.textAlign = "statr"; //对齐方式为左对齐
+    // ctx.textBaseline = "top"; //基线
+    // ctx.fillText("你好", 400, 400, 200);
+
     intital(); //初始化
     start();
+    var score=0;
+    drawDot(500,500,"blue");
 
     function intital()
     {
@@ -70,10 +78,14 @@
         {
             // snakeBody  add 1
             addBody(snakeBody, lastBody);
+            score++;    //吃到食物后分数加1
             //spawn food again
             spawnFood();
         }
     }
+
+
+
 
     function addBody(body, lastBd)
     {
@@ -129,7 +141,7 @@
         var newHeadX = snakeBody[0][0];
         var newHeadY = snakeBody[0][1];
 
-        for (var i = snakeBody.length - 1; i >= 1; i--)
+        for (var i = snakeBody.length - 1; i >= 1; i--) //值传递
         {
             snakeBody[i][0] = snakeBody[i - 1][0];
             snakeBody[i][1] = snakeBody[i - 1][1];
@@ -231,7 +243,8 @@
 
     function gameOver() //游戏结束后关闭定时器重新开始重新开启定时器
     {
-        alert("Game over");
+        alert("Game over,your final score is:"+score);
+        score=0;     //游戏结束后分数清零
         clearInterval(moveTimer);
         start();
         hasSetInternal = false;
