@@ -10,7 +10,9 @@
     var ctx = c.getContext("2d");
     var canvasWidth = 400;
     var canvasHeight = 400;
-    var moveSpeed = 300;
+    var moveDelay = 300;
+    var speedIncrease =50;
+    var speedLevel=0;
     var gridSize = 10;
     var size = 10;
     var Direction = {};
@@ -24,12 +26,6 @@
     var moveTimer;
     var directionPrevious = Direction.none;
     var direction = Direction.right; // Under initial codition,it won't move
-
-    // ctx.fillStyle = "red";
-    // ctx.font = "bold 26px"; //字体样式
-    // ctx.textAlign = "statr"; //对齐方式为左对齐
-    // ctx.textBaseline = "top"; //基线
-    // ctx.fillText("你好", 400, 400, 200);
 
     intital(); //初始化
     start();
@@ -58,7 +54,7 @@
         spawnFood();
     }
 
-    function onTick()
+    function onLogicTick()
     {
         if (isDead())
         {
@@ -73,8 +69,6 @@
 
         var lastBody = rememberLastBody(snakeBody);
 
-        move(direction);
-
         if (hasAteFood())
         {
             // snakeBody  add 1
@@ -82,11 +76,29 @@
             score++;    //吃到食物后分数加1
             //spawn food again
             spawnFood();
+
+            speedUp();   //吃到食物后加速
+            console.log("moveDelay:"+moveDelay);
+            console.log("score："+score);
+
         }
+        // speedUp()
+        
+        move(direction);
     }
+    
+    var intervalCount=0;
+    function onTick()
+    {
+        intervalCount++;
+        if(intervalCount >= moveDelay)
+        {
+            intervalCount=0;
+            // moveDelay=300;
+            onLogicTick();
+        }
 
-
-
+    }
 
     function addBody(body, lastBd)
     {
@@ -109,9 +121,10 @@
     {
         key = event.keyCode;
         console.log(key);
+        // speedUp();
         if (!hasSetInternal) //第一次按下任意键生成定时器，且只会生成一个定时器，后面再按不再生成新的定时器
         {
-            moveTimer = setInterval("onTick()", moveSpeed);
+            moveTimer = setInterval("onTick()", 1);
             direction = Direction.right; //第一次按下任意键都向右走，后面根据按键正常上下左右走
             hasSetInternal = true;
             return;
@@ -134,7 +147,6 @@
         }
     }
 
-
     function move(movDir)
     {
         drawDot(snakeBody[snakeBody.length - 1][0], snakeBody[snakeBody.length - 1][1], "grey");
@@ -146,9 +158,9 @@
         {
             snakeBody[i][0] = snakeBody[i - 1][0];
             snakeBody[i][1] = snakeBody[i - 1][1];
-            drawDot(snakeBody[1][0],snakeBody[1][1],"black");  //保证蛇身前进仍然是黑色
         }
-
+        drawDot(snakeBody[1][0],snakeBody[1][1],"black");  //保证蛇身前进仍然是黑色
+       
         switch (movDir)
         {
             case Direction.left:
@@ -315,6 +327,21 @@
         }
         return touchedBody;
     }
+
+    function speedUp() //每3分为一个速度区间，得分越高速度越快
+    {
+        speedLevel = Math.floor(score/3);
+        moveDelay=300;     // 保证都是在原始基础上计算
+        if(moveDelay>speedIncrease)
+        {
+            moveDelay = moveDelay - speedLevel*speedIncrease;
+        }
+        else
+        {
+            moveDelay=speedIncrease;
+        }   
+    }
+
     </script>
 </body>
 
