@@ -3,21 +3,20 @@
 
 <body>
     <canvas id="myCanvas" width="400" height="400" style="border:1px solid #c3c3c3;">
-        Your browser does not support the HTML5 canvas tag.
     </canvas>
     <div id="myText">
     </div>
     <script type="text/javascript">
     var c = document.getElementById("myCanvas");
     var m_text = document.getElementById("myText");
-    m_text.innerHTML = "Hello World";
-
     var ctx = c.getContext("2d");
     var canvasWidth = 400;
     var canvasHeight = 400;
     var moveDelay = 300;
-    var speedIncrease = 50;
+    var minMoveDelay = 50;
+    var speedIncrease = 100;
     var speedLevel = 0;
+    var score = 0;
     var gridSize = 10;
     var size = 10;
     var Direction = {};
@@ -32,12 +31,10 @@
     var directionPrevious = Direction.none;
     var direction = Direction.right; // Under initial codition,it won't move
 
-    intital(); //初始化
+    initial(); //初始化
     start();
-    var score = 0;
-    drawDot(500, 500, "blue");
 
-    function intital()
+    function initial()
     {
         document.onkeydown = onkeydown;
     }
@@ -47,6 +44,8 @@
         ctx.fillStyle = "grey";
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
         snakeBody = new Array();
+        score = 0; //游戏结束重新开始分数清零
+        m_text.innerHTML = "score:" + score;
 
         for (var i = 0; i < size; i++)
         {
@@ -76,18 +75,16 @@
 
         if (hasAteFood())
         {
-            // snakeBody  add 1
-            addBody(snakeBody, lastBody);
+            addBody(snakeBody, lastBody); // snakeBody  add 1
             score++; //吃到食物后分数加1
-            //spawn food again
-            spawnFood();
-
+            spawnFood(); //spawn food again
             speedUp(); //吃到食物后加速
             console.log("moveDelay:" + moveDelay);
             console.log("score：" + score);
 
         }
-        // speedUp()
+
+        m_text.innerHTML = "score:" + score;
 
         move(direction);
     }
@@ -100,25 +97,20 @@
         if (intervalCount >= moveDelay)
         {
             intervalCount = 0;
-            // moveDelay=300;
             onLogicTick();
         }
-
     }
 
     function addBody(body, lastBd)
     {
         body[body.length] = new Array(lastBd.lastBodyX, lastBd.lastBodyY);
         // body[body.length] = lastBd;     引用传递
-
         drawDot(body[body.length - 1][0], body[body.length - 1][1], "black");
-
     }
 
     function hasAteFood()
     {
         return (snakeBody[0][0] == foodX) && (snakeBody[0][1] == foodY);
-
     }
 
     var hasSetInternal = false;
@@ -127,7 +119,6 @@
     {
         key = event.keyCode;
         console.log(key);
-        // speedUp();
         if (!hasSetInternal) //第一次按下任意键生成定时器，且只会生成一个定时器，后面再按不再生成新的定时器
         {
             moveTimer = setInterval("onTick()", 1);
@@ -200,7 +191,6 @@
             lastBodyX: body[body.length - 1][0],
             lastBodyY: body[body.length - 1][1]
         };
-
     }
 
     function drawDot(x, y, color)
@@ -264,7 +254,7 @@
     function gameOver() //游戏结束后关闭定时器重新开始重新开启定时器
     {
         alert("Game over,your final score is:" + score);
-        score = 0; //游戏结束后分数清零
+
         clearInterval(moveTimer);
         start();
         hasSetInternal = false;
@@ -338,13 +328,10 @@
     {
         speedLevel = Math.floor(score / 3);
         moveDelay = 300; // 保证都是在原始基础上计算
-        if (moveDelay > speedIncrease)
+        moveDelay = moveDelay - speedLevel * speedIncrease;
+        if (moveDelay < minMoveDelay)
         {
-            moveDelay = moveDelay - speedLevel * speedIncrease;
-        }
-        else
-        {
-            moveDelay = speedIncrease;
+            moveDelay = minMoveDelay;
         }
     }
     </script>
