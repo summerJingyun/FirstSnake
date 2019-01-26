@@ -13,30 +13,37 @@
     </div>
 </body>
 <script type="text/javascript">
-var c = document.getElementById("myCanvas");
+var myCanvas = document.getElementById("myCanvas");
 var m_text = document.getElementById("score");
 var myButton = document.getElementById("btn")
-var ctx = c.getContext("2d");
+var ctx = myCanvas.getContext("2d");
+
 var canvasWidth = 400;
 var canvasHeight = 400;
-var moveDelay = 300;
-var minMoveDelay = 50;
-var speedIncrease = 100;
+
+var minMoveDelay = 0.01;
+var initialMoveDelay = 0.5;
+
+var moveDelay = initialMoveDelay;
+var moveDelayDecrease = 0.01;
 var speedLevel = 0;
 var score = 0;
+
 var gridSize = 10;
-var size = 10;
+var initalSnakeLength = 10;
+
 var Direction = {};
 Direction.up = 0;
 Direction.down = 1;
 Direction.left = 2;
 Direction.right = 3;
 Direction.none = 4;
+var directionPrevious = Direction.none;
+var direction = Direction.right; // Under initial codition,it won't move
+
 var headX = 200;
 var headY = 200;
 var moveTimer;
-var directionPrevious = Direction.none;
-var direction = Direction.right; // Under initial codition,it won't move
 
 initial(); //初始化
 start();
@@ -52,8 +59,9 @@ function start()
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     snakeBody = new Array();
     score = 0; //游戏结束重新开始分数清零
+    moveDelay = initialMoveDelay;
     myText.innerHTML = "score:" + score;
-    for (var i = 0; i < size; i++)
+    for (var i = 0; i < initalSnakeLength; i++)
     {
         snakeBody[i] = new Array();
         snakeBody[i][0] = headX - i * gridSize;
@@ -99,9 +107,7 @@ function onLogicTick()
         }
 
         spawnFood(); //spawn food again
-        speedUp(); //吃到食物后加速
-        console.log("moveDelay:" + moveDelay);
-        console.log("score：" + score);
+        trySpeedUp(); //吃到食物后加速
 
     }
 
@@ -115,7 +121,7 @@ var intervalCount = 0;
 function onTick()
 {
     intervalCount++;
-    if (intervalCount >= moveDelay)
+    if (intervalCount >= moveDelay * 100)
     {
         intervalCount = 0;
         onLogicTick();
@@ -139,10 +145,9 @@ var hasSetInternal = false;
 function onkeydown()
 {
     key = event.keyCode;
-    console.log(key);
     if (!hasSetInternal) //第一次按下任意键生成定时器，且只会生成一个定时器，后面再按不再生成新的定时器
     {
-        moveTimer = setInterval("onTick()", 1);
+        moveTimer = setInterval("onTick()", 10);
         direction = Direction.right; //第一次按下任意键都向右走，后面根据按键正常上下左右走
         hasSetInternal = true;
         return;
@@ -246,14 +251,13 @@ function spawnFood()
     actualColor = getColorRandom();
     drawDot(foodX, foodY, actualColor);
     previousColor = actualColor;
-    console.log(previousColor);
 }
 
+var cArray = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
 //生成随机颜色
 function getColorRandom()
 {
     var c = "#";
-    var cArray = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
     for (var i = 0; i < 6; i++)
     {
         var cIndex = Math.round(Math.random() * 15);
@@ -292,7 +296,7 @@ function isDead()
 
 function gameOver() //游戏结束后关闭定时器重新开始重新开启定时器
 {
-    alert("Game over,your final score is:" + score);
+    alert("Game over, your final score is: " + score);
 
     clearInterval(moveTimer);
     start();
@@ -363,11 +367,10 @@ function headTouchedBody()
     return touchedBody;
 }
 
-function speedUp() //每3分为一个速度区间，得分越高速度越快
+function trySpeedUp() //每3分为一个速度区间，得分越高速度越快
 {
     speedLevel = Math.floor(score / 3);
-    moveDelay = 300; // 保证都是在原始基础上计算
-    moveDelay = moveDelay - speedLevel * speedIncrease;
+    moveDelay = initialMoveDelay - speedLevel * moveDelayDecrease;
     if (moveDelay < minMoveDelay)
     {
         moveDelay = minMoveDelay;
