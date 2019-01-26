@@ -4,8 +4,6 @@
 <body>
     <canvas id="myCanvas" width="400" height="400" style="border:1px solid #c3c3c3;">
     </canvas>
-    <div id="myText">
-    </div>
     <script type="text/javascript">
     var c = document.getElementById("myCanvas");
     var m_text = document.getElementById("myText");
@@ -17,6 +15,9 @@
     var speedIncrease = 100;
     var speedLevel = 0;
     var score = 0;
+    var speedIncrease = 50;
+    var minMoveDelay = 50;
+    var speedLevel = 0;
     var gridSize = 10;
     var size = 10;
     var Direction = {};
@@ -30,11 +31,12 @@
     var moveTimer;
     var directionPrevious = Direction.none;
     var direction = Direction.right; // Under initial codition,it won't move
+    var score = 0;
 
     initial(); //初始化
     start();
 
-    function initial()
+    function intital()
     {
         document.onkeydown = onkeydown;
     }
@@ -46,6 +48,7 @@
         snakeBody = new Array();
         score = 0; //游戏结束重新开始分数清零
         m_text.innerHTML = "score:" + score;
+        score = 0; //游戏结束后重新开始分数清零
 
         for (var i = 0; i < size; i++)
         {
@@ -86,6 +89,17 @@
 
         m_text.innerHTML = "score:" + score;
 
+        // snakeBody  add 1
+        addBody(snakeBody, lastBody);
+        score++; //吃到食物后分数加1
+        //spawn food again
+        spawnFood();
+
+        speedUp(); //吃到食物后加速
+        console.log("moveDelay:" + moveDelay);
+        console.log("score：" + score);
+
+
         move(direction);
     }
 
@@ -95,8 +109,15 @@
     {
         intervalCount++;
         if (intervalCount >= moveDelay)
-        {
-            intervalCount = 0;
+        { <<
+            <<
+            << < HEAD
+            intervalCount = 0; ===
+            ===
+            =
+            intervalCount = 0; >>>
+            >>>
+            > 553 b5a0edb215e6ee9b2b9aeab0b02f6770a3e0a
             onLogicTick();
         }
     }
@@ -254,7 +275,6 @@
     function gameOver() //游戏结束后关闭定时器重新开始重新开启定时器
     {
         alert("Game over,your final score is:" + score);
-
         clearInterval(moveTimer);
         start();
         hasSetInternal = false;
