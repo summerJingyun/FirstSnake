@@ -15,7 +15,6 @@
 <script type="text/javascript">
 var myCanvas = document.getElementById("myCanvas");
 var m_text = document.getElementById("score");
-var myButton = document.getElementById("btn")
 var ctx = myCanvas.getContext("2d");
 
 var canvasWidth = 400;
@@ -44,6 +43,9 @@ var direction = Direction.right; // Under initial codition,it won't move
 var headX = 200;
 var headY = 200;
 var moveTimer;
+var spawnColorfulFoodTimer;
+
+var cArray = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
 
 initial(); //初始化
 start();
@@ -69,12 +71,13 @@ function start()
         drawDot(snakeBody[i][0], snakeBody[i][1], "black");
     }
     drawDot(snakeBody[0][0], snakeBody[0][1], "blue") //初始化将蛇头画蓝，蛇身画黑
-    spawnFood();
+    spawnActualFood();
 }
 
 function onClickBtn() //点击restart按钮重新开始游戏
 {
     clearInterval(moveTimer);
+    clearInterval(spawnColorfulFoodTimer);
     start();
     hasSetInternal = false;
 }
@@ -97,16 +100,9 @@ function onLogicTick()
     if (hasAteFood())
     {
         addBody(snakeBody, lastBody); // snakeBody  add 1
-        if (previousColor == "#FF0000" || previousColor == "#FFFF00" || previousColor == "#B9D86B") //吃到这三种颜色的食物分数加5分
-        {
-            score += 5;
-        }
-        else
-        {
-            score++;
-        }
-
-        spawnFood(); //spawn food again
+        clearInterval(spawnColorfulFoodTimer);
+        score++;
+        spawnActualFood();
         trySpeedUp(); //吃到食物后加速
 
     }
@@ -230,7 +226,7 @@ var actualColor;
 var previousColor;
 
 //生成随机食物,判断食物是否压到身子，压到则重新生成
-function spawnFood()
+function spawnSingleColorFood()   //生成单一颜色的食物
 {
     var lengthX = canvasWidth / gridSize;
     var lengthY = canvasHeight / gridSize;
@@ -253,7 +249,6 @@ function spawnFood()
     previousColor = actualColor;
 }
 
-var cArray = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
 //生成随机颜色
 function getColorRandom()
 {
@@ -264,6 +259,29 @@ function getColorRandom()
         c += cArray[cIndex];
     }
     return c;
+}
+function tryColorfulFood()
+{
+    var color=getColorRandom();
+    drawDot(foodX,foodY,color);
+}
+   
+function spawnColorfulFood()//生成闪光食物
+{
+    spawnColorfulFoodTimer = setInterval("tryColorfulFood()", 10);
+}
+
+function spawnActualFood()  //三分之一的概率生成闪光食物
+{
+    var randomNum=Math.random()*100;
+    if(randomNum>0&&randomNum<30)
+    {
+        spawnColorfulFood();
+    }
+    else
+    {
+        spawnSingleColorFood();
+    }
 }
 
 function IsReverseInput() //判断是否需要反向走才能正常继续
@@ -277,7 +295,7 @@ function IsReverseInput() //判断是否需要反向走才能正常继续
             break;
         case Direction.up:
             newHeadY = newHeadY - 1 * gridSize;
-            break;
+            break;d
         case Direction.right:
             newHeadX = newHeadX + 1 * gridSize;
             break;
@@ -297,8 +315,8 @@ function isDead()
 function gameOver() //游戏结束后关闭定时器重新开始重新开启定时器
 {
     alert("Game over, your final score is: " + score);
-
     clearInterval(moveTimer);
+    clearInterval(spawnColorfulFoodTimer);
     start();
     hasSetInternal = false;
 }
