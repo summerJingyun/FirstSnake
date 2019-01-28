@@ -21,7 +21,7 @@ var canvasWidth = 400;
 var canvasHeight = 400;
 
 var minMoveDelay = 0.01;
-var initialMoveDelay = 0.5;
+var initialMoveDelay = 0.2;
 
 var moveDelay = initialMoveDelay;
 var moveDelayDecrease = 0.01;
@@ -42,8 +42,14 @@ var direction = Direction.right; // Under initial codition,it won't move
 
 var headX = 200;
 var headY = 200;
+
 var moveTimer;
 var spawnColorfulFoodTimer;
+
+var foodX, foodY;
+var isColorfulFood;
+var actualColor;
+var previousColor;
 
 var cArray = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
 
@@ -71,7 +77,7 @@ function start()
         drawDot(snakeBody[i][0], snakeBody[i][1], "black");
     }
     drawDot(snakeBody[0][0], snakeBody[0][1], "blue") //初始化将蛇头画蓝，蛇身画黑
-    spawnActualFood();
+    spawnFood();
 }
 
 function onClickBtn() //点击restart按钮重新开始游戏
@@ -101,8 +107,17 @@ function onLogicTick()
     {
         addBody(snakeBody, lastBody); // snakeBody  add 1
         clearInterval(spawnColorfulFoodTimer);
-        score++;
-        spawnActualFood();
+
+        if (isColorfulFood)
+        {
+            score += 3;
+        }
+        else
+        {
+            score++;
+
+        }
+        spawnFood();
         trySpeedUp(); //吃到食物后加速
 
     }
@@ -221,12 +236,9 @@ function drawDot(x, y, color)
     ctx.fillRect(x, y, gridSize, gridSize);
 }
 
-var foodX, foodY;
-var actualColor;
-var previousColor;
 
 //生成随机食物,判断食物是否压到身子，压到则重新生成
-function spawnSingleColorFood()   //生成单一颜色的食物
+function spawnSingleColorFood() //生成单一颜色的食物
 {
     var lengthX = canvasWidth / gridSize;
     var lengthY = canvasHeight / gridSize;
@@ -260,21 +272,27 @@ function getColorRandom()
     }
     return c;
 }
+
 function tryColorfulFood()
 {
-    var color=getColorRandom();
-    drawDot(foodX,foodY,color);
+    var color = getColorRandom();
+    drawDot(foodX, foodY, color);
 }
-   
-function spawnColorfulFood()//生成闪光食物
+
+function spawnColorfulFood() //生成闪光食物
 {
     spawnColorfulFoodTimer = setInterval("tryColorfulFood()", 10);
 }
 
-function spawnActualFood()  //三分之一的概率生成闪光食物
+var cou = 1;
+
+function spawnFood() //三分之一的概率生成闪光食物
 {
-    var randomNum=Math.random()*100;
-    if(randomNum>0&&randomNum<30)
+    cou++;
+    var randomNum = Math.random() * 100;
+    isColorfulFood = randomNum > 0 && randomNum < 30;
+
+    if (cou % 3 == 1)
     {
         spawnColorfulFood();
     }
@@ -282,6 +300,7 @@ function spawnActualFood()  //三分之一的概率生成闪光食物
     {
         spawnSingleColorFood();
     }
+    console.log(isColorfulFood);
 }
 
 function IsReverseInput() //判断是否需要反向走才能正常继续
@@ -295,7 +314,7 @@ function IsReverseInput() //判断是否需要反向走才能正常继续
             break;
         case Direction.up:
             newHeadY = newHeadY - 1 * gridSize;
-            break;d
+            break;
         case Direction.right:
             newHeadX = newHeadX + 1 * gridSize;
             break;
