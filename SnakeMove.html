@@ -107,7 +107,6 @@ function onLogicTick()
     {
         addBody(snakeBody, lastBody); // snakeBody  add 1
         clearInterval(drawColorfulFoodTimer);
-
         if (isColorfulFood)
         {
             score += 3;
@@ -119,7 +118,6 @@ function onLogicTick()
         }
         spawnFood();
         trySpeedUp(); //吃到食物后加速
-
     }
 
     myText.innerHTML = "score:" + score;
@@ -148,7 +146,25 @@ function addBody(body, lastBd)
 
 function hasAteFood()
 {
-    return (snakeBody[0][0] == foodX) && (snakeBody[0][1] == foodY);
+    // return (snakeBody[0][0] == foodX) && (snakeBody[0][1] == foodY);
+    var newHeadX = snakeBody[0][0];
+    var newHeadY = snakeBody[0][1];
+    switch (direction)
+    {
+        case Direction.left:
+            newHeadX = newHeadX - 1 * gridSize;
+            break;
+        case Direction.up:
+            newHeadY = newHeadY - 1 * gridSize;
+            break;
+        case Direction.right:
+            newHeadX = newHeadX + 1 * gridSize;
+            break;
+        case Direction.down:
+            newHeadY = newHeadY + 1 * gridSize;
+            break;
+    }
+    return (newHeadX == foodX) && (newHeadY == foodY);
 }
 
 var hasSetInternal = false;
