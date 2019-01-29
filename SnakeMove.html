@@ -44,7 +44,7 @@ var headX = 200;
 var headY = 200;
 
 var moveTimer;
-var spawnColorfulFoodTimer;
+var drawColorfulFoodTimer;
 
 var foodX, foodY;
 var isColorfulFood;
@@ -83,7 +83,7 @@ function start()
 function onClickBtn() //点击restart按钮重新开始游戏
 {
     clearInterval(moveTimer);
-    clearInterval(spawnColorfulFoodTimer);
+    clearInterval(drawColorfulFoodTimer);
     start();
     hasSetInternal = false;
 }
@@ -106,7 +106,7 @@ function onLogicTick()
     if (hasAteFood())
     {
         addBody(snakeBody, lastBody); // snakeBody  add 1
-        clearInterval(spawnColorfulFoodTimer);
+        clearInterval(drawColorfulFoodTimer);
 
         if (isColorfulFood)
         {
@@ -238,7 +238,15 @@ function drawDot(x, y, color)
 
 
 //生成随机食物,判断食物是否压到身子，压到则重新生成
-function spawnSingleColorFood() //生成单一颜色的食物
+function drawSingleColorFood() //生成单一颜色的食物
+{
+    currentFoodPosition();
+    actualColor = getColorRandom();
+    drawDot(foodX, foodY, actualColor);
+    previousColor = actualColor;
+}
+
+function currentFoodPosition()
 {
     var lengthX = canvasWidth / gridSize;
     var lengthY = canvasHeight / gridSize;
@@ -256,9 +264,6 @@ function spawnSingleColorFood() //生成单一颜色的食物
             }
         }
     }
-    actualColor = getColorRandom();
-    drawDot(foodX, foodY, actualColor);
-    previousColor = actualColor;
 }
 
 //生成随机颜色
@@ -273,32 +278,30 @@ function getColorRandom()
     return c;
 }
 
-function tryColorfulFood()
+function drawRandomColorFood()
 {
     var color = getColorRandom();
     drawDot(foodX, foodY, color);
 }
 
-function spawnColorfulFood() //生成闪光食物
+function drawColorfulFood() //生成闪光食物
 {
-    spawnColorfulFoodTimer = setInterval("tryColorfulFood()", 10);
+    drawColorfulFoodTimer = setInterval("drawRandomColorFood()", 10);
 }
-
-var cou = 1;
 
 function spawnFood() //三分之一的概率生成闪光食物
 {
-    cou++;
     var randomNum = Math.random() * 100;
     isColorfulFood = randomNum > 0 && randomNum < 30;
 
-    if (cou % 3 == 1)
+    if (isColorfulFood)
     {
-        spawnColorfulFood();
+        currentFoodPosition();
+        drawColorfulFood();
     }
     else
     {
-        spawnSingleColorFood();
+        drawSingleColorFood();
     }
     console.log(isColorfulFood);
 }
@@ -335,7 +338,7 @@ function gameOver() //游戏结束后关闭定时器重新开始重新开启定�
 {
     alert("Game over, your final score is: " + score);
     clearInterval(moveTimer);
-    clearInterval(spawnColorfulFoodTimer);
+    clearInterval(drawColorfulFoodTimer);
     start();
     hasSetInternal = false;
 }
