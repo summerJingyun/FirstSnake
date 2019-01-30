@@ -173,14 +173,6 @@ function onkeydown()
 {
     key = event.keyCode;
 
-    if (
-        direction != directionPrevious &&
-        !(IsReverseInput())
-    )
-    {
-        move(direction);
-    }
-
     if (!hasSetInternal) //第一次按下任意键生成定时器，且只会生成一个定时器，后面再按不再生成新的定时器
     {
         moveTimer = setInterval("onTick()", 10);
@@ -203,6 +195,15 @@ function onkeydown()
         case 83: //down
             direction = Direction.down;
             break;
+    }
+
+    if (
+        direction != directionPrevious &&
+        !(IsReverseInput())
+    )
+    {
+        move(direction);
+        intervalCount = 0;
     }
 }
 
