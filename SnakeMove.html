@@ -105,6 +105,7 @@ function onLogicTick()
 
     if (hasAteFood())
     {
+        move(direction);
         addBody(snakeBody, lastBody); // snakeBody  add 1
         clearInterval(drawColorfulFoodTimer);
         if (isColorfulFood)
