@@ -21,7 +21,7 @@ var canvasWidth = 400;
 var canvasHeight = 400;
 
 var minMoveDelay = 0.01;
-var initialMoveDelay = 0.2;
+var initialMoveDelay = 1;
 
 var moveDelay = initialMoveDelay;
 var moveDelayDecrease = 0.01;
@@ -45,6 +45,7 @@ var headY = 200;
 
 var moveTimer;
 var drawColorfulFoodTimer;
+var intervalCount = 0;
 
 var foodX, foodY;
 var isColorfulFood;
@@ -126,8 +127,6 @@ function onLogicTick()
     move(direction);
 }
 
-var intervalCount = 0;
-
 function onTick()
 {
     intervalCount++;
@@ -173,6 +172,15 @@ var hasSetInternal = false;
 function onkeydown()
 {
     key = event.keyCode;
+
+    if (
+        direction != directionPrevious &&
+        !(IsReverseInput())
+    )
+    {
+        move(direction);
+    }
+
     if (!hasSetInternal) //第一次按下任意键生成定时器，且只会生成一个定时器，后面再按不再生成新的定时器
     {
         moveTimer = setInterval("onTick()", 10);
