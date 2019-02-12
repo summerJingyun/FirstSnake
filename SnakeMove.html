@@ -4,7 +4,7 @@
 <body>
     <canvas id="myCanvas" width="400" height="400" style="border:1px solid #c3c3c3;">
     </canvas>
-    <div id="myText" style="position:absolute;left:0px;top:420px">
+    <div id="myText" style="position:absolute;left:10px;top:420px">
     </div>
     <div class="container" style="position:absolute;left:350px;top:420px">
         <form>
@@ -43,9 +43,12 @@ var direction = Direction.right; // Under initial codition,it won't move
 var headX = 200;
 var headY = 200;
 
+var hasSetInternal = false;
 var moveTimer;
 var drawColorfulFoodTimer;
 var intervalCount = 0;
+var onLogicTickNum = 0;
+var onLogicTickNumLimit = 10;
 
 var foodX, foodY;
 var isColorfulFood;
@@ -53,6 +56,7 @@ var actualColor;
 var previousColor;
 
 var cArray = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
+
 
 initial(); //初始化
 start();
@@ -104,11 +108,17 @@ function onLogicTick()
 
     var lastBody = rememberLastBody(snakeBody);
 
+    if (onLogicTickNum > onLogicTickNumLimit) //10步之内未吃到食物则重新生成新食物
+    {
+        FoodDisappear();
+    }
+
     if (hasAteFood())
     {
         move(direction);
         addBody(snakeBody, lastBody); // snakeBody  add 1
         clearInterval(drawColorfulFoodTimer);
+        onLogicTickNum = 0
         if (isColorfulFood)
         {
             score += 3;
@@ -134,6 +144,7 @@ function onTick()
     {
         intervalCount = 0;
         onLogicTick();
+        onLogicTickNum++; //统计执行onLogicTick的次数
     }
 }
 
@@ -167,7 +178,6 @@ function hasAteFood()
     return (newHeadX == foodX) && (newHeadY == foodY);
 }
 
-var hasSetInternal = false;
 
 function onkeydown()
 {
@@ -196,7 +206,11 @@ function onkeydown()
             direction = Direction.down;
             break;
     }
+    instantTurnDirection();
+}
 
+function instantTurnDirection()
+{
     if (
         direction != directionPrevious &&
         !(IsReverseInput())
@@ -290,6 +304,7 @@ function currentFoodPosition()
             }
         }
     }
+    return (foodX, foodY);
 }
 
 //生成随机颜色
@@ -319,7 +334,6 @@ function spawnFood() //三分之一的概率生成闪光食物
 {
     var randomNum = Math.random() * 100;
     isColorfulFood = randomNum > 0 && randomNum < 30;
-
     if (isColorfulFood)
     {
         currentFoodPosition();
@@ -329,7 +343,13 @@ function spawnFood() //三分之一的概率生成闪光食物
     {
         drawSingleColorFood();
     }
-    console.log(isColorfulFood);
+}
+
+function FoodDisappear()
+{
+    drawDot(foodX, foodY, 'grey');
+    onLogicTickNum = 0;
+    spawnFood();
 }
 
 function IsReverseInput() //判断是否需要反向走才能正常继续
@@ -365,6 +385,7 @@ function gameOver() //游戏结束后关闭定时器重新开始重新开启定�
     alert("Game over, your final score is: " + score);
     clearInterval(moveTimer);
     clearInterval(drawColorfulFoodTimer);
+    onLogicTickNum = 0;
     start();
     hasSetInternal = false;
 }
