@@ -1,468 +1,476 @@
 <!DOCTYPE html>
+<!-- saved from url=(0044)file:///C:/Users/sqi1/Desktop/SnakeMove.html -->
 <html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+</head>
 
 <body>
     <canvas id="myCanvas" width="400" height="400" style="border:1px solid #c3c3c3;">
     </canvas>
-    <div id="myText" style="position:absolute;left:10px;top:420px">
-    </div>
+    <div id="myText" style="position:absolute;left:10px;top:420px">score:0</div>
     <div class="container" style="position:absolute;left:350px;top:420px">
         <form>
             <button type="button" value="Restart" id="btn" onclick="onClickBtn()"> Restart</button>
         </form>
     </div>
-</body>
-<script type="text/javascript">
-var myCanvas = document.getElementById("myCanvas");
-var m_text = document.getElementById("score");
-var ctx = myCanvas.getContext("2d");
+    <script type="text/javascript">
+    var myCanvas = document.getElementById("myCanvas");
+    var m_text = document.getElementById("score");
+    var ctx = myCanvas.getContext("2d");
 
-var canvasWidth = 400;
-var canvasHeight = 400;
+    var canvasWidth = 400;
+    var canvasHeight = 400;
 
-var minMoveDelay = 0.01;
-var initialMoveDelay = 1;
+    var minMoveDelay = 0.01;
+    var initialMoveDelay = 0.5;
 
-var moveDelay = initialMoveDelay;
-var moveDelayDecrease = 0.01;
-var speedLevel = 0;
-var score = 0;
+    var moveDelay = initialMoveDelay;
+    var moveDelayDecrease = 0.01;
+    var speedLevel = 0;
+    var score = 0;
 
-var gridSize = 10;
-var initalSnakeLength = 10;
+    var gridSize = 10;
+    var initalSnakeLength = 3;
 
-var Direction = {};
-Direction.up = 0;
-Direction.down = 1;
-Direction.left = 2;
-Direction.right = 3;
-Direction.none = 4;
-var directionPrevious = Direction.none;
-var direction = Direction.right; // Under initial codition,it won't move
+    var Direction = {};
+    Direction.up = 0;
+    Direction.down = 1;
+    Direction.left = 2;
+    Direction.right = 3;
+    Direction.none = 4;
+    var directionPrevious = Direction.none;
+    var direction = Direction.right; // Under initial codition,it won't move
 
-var headX = 200;
-var headY = 200;
+    var headX = 200;
+    var headY = 200;
 
-var hasSetInternal = false;
-var moveTimer;
-var drawColorfulFoodTimer;
-var intervalCount = 0;
-var onLogicTickNum = 0;
-var onLogicTickNumLimit = 10;
+    var hasSetInternal = false;
+    var moveTimer;
+    var drawColorfulFoodTimer;
+    var intervalCount = 0;
+    var onLogicTickNum = 0;
+    var onLogicTickNumLimit = 10;
 
-var foodX, foodY;
-var isColorfulFood;
-var actualColor;
-var previousColor;
+    var foodX, foodY;
+    var isColorfulFood;
+    var actualColor;
+    var previousColor;
+    var foodArrayLength = 3;
+    var currentFoodLength;
 
-var cArray = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
+    var lastBody;
+
+    var cArray = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
 
 
-initial(); //初始化
-start();
-
-function initial()
-{
-    document.onkeydown = onkeydown;
-}
-
-function start()
-{
-    ctx.fillStyle = "grey";
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-    snakeBody = new Array();
-    score = 0; //游戏结束重新开始分数清零
-    moveDelay = initialMoveDelay;
-    myText.innerHTML = "score:" + score;
-    for (var i = 0; i < initalSnakeLength; i++)
-    {
-        snakeBody[i] = new Array();
-        snakeBody[i][0] = headX - i * gridSize;
-        snakeBody[i][1] = headY;
-        drawDot(snakeBody[i][0], snakeBody[i][1], "black");
-    }
-    drawDot(snakeBody[0][0], snakeBody[0][1], "blue") //初始化将蛇头画蓝，蛇身画黑
-    spawnFood();
-}
-
-function onClickBtn() //点击restart按钮重新开始游戏
-{
-    clearInterval(moveTimer);
-    clearInterval(drawColorfulFoodTimer);
+    initial(); //初始化
     start();
-    hasSetInternal = false;
-}
 
-function onLogicTick()
-{
-    if (isDead())
+    function initial()
     {
-        gameOver();
-        return;
+        document.onkeydown = onkeydown;
     }
 
-    if (IsReverseInput())
+    function start()
     {
-        direction = directionPrevious; //判断当按下按键，若蛇朝该方向走会踩到蛇身时，不让它朝此方向走，而继续按照原来的方向走
-    }
-
-    var lastBody = rememberLastBody(snakeBody);
-
-    if (onLogicTickNum > onLogicTickNumLimit) //10步之内未吃到食物则重新生成新食物
-    {
-        FoodDisappear();
-    }
-
-    if (hasAteFood())
-    {
-        move(direction);
-        addBody(snakeBody, lastBody); // snakeBody  add 1
-        clearInterval(drawColorfulFoodTimer);
-        onLogicTickNum = 0
-        if (isColorfulFood)
+        ctx.fillStyle = "grey";
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        snakeBody = new Array();
+        score = 0; //游戏结束重新开始分数清零
+        moveDelay = initialMoveDelay;
+        myText.innerHTML = "score:" + score;
+        for (var i = 0; i < initalSnakeLength; i++)
         {
-            score += 3;
+            snakeBody[i] = new Array();
+            snakeBody[i][0] = headX - i * gridSize;
+            snakeBody[i][1] = headY;
+            drawDot(snakeBody[i][0], snakeBody[i][1], "black");
+        }
+        drawDot(snakeBody[0][0], snakeBody[0][1], "blue") //初始化将蛇头画蓝，蛇身画黑
+        spawnFood();
+    }
+
+    function onClickBtn() //点击restart按钮重新开始游戏
+    {
+        clearInterval(moveTimer);
+        // clearInterval(drawColorfulFoodTimer);
+        start();
+        hasSetInternal = false;
+    }
+
+    function onLogicTick()
+    {
+        if (isDead())
+        {
+            gameOver();
+            return;
+        }
+
+        if (IsReverseInput())
+        {
+            direction = directionPrevious; //判断当按下按键，若蛇朝该方向走会踩到蛇身时，不让它朝此方向走，而继续按照原来的方向走
+        }
+
+        lastBody = rememberLastBody(snakeBody);
+
+        hasAteFood();
+
+        trySpeedUp(); //吃到食物后加速
+
+        myText.innerHTML = "score:" + score;
+
+        move(direction);
+    }
+
+    function onTick()
+    {
+        intervalCount++;
+        if (intervalCount >= moveDelay * 100)
+        {
+            intervalCount = 0;
+            onLogicTick();
+            onLogicTickNum++; //统计执行onLogicTick的次数
+        }
+    }
+
+    function addBody(body, lastBd)
+    {
+        body[body.length] = new Array(lastBd.lastBodyX, lastBd.lastBodyY);
+        // body[body.length] = lastBd;     引用传递
+        drawDot(body[body.length - 1][0], body[body.length - 1][1], "black");
+    }
+
+    function onkeydown()
+    {
+        key = event.keyCode;
+
+        if (!hasSetInternal) //第一次按下任意键生成定时器，且只会生成一个定时器，后面再按不再生成新的定时器
+        {
+            moveTimer = setInterval("onTick()", 10);
+            direction = Direction.right; //第一次按下任意键都向右走，后面根据按键正常上下左右走
+            hasSetInternal = true;
+            return;
+        }
+
+        switch (key)
+        {
+            case 65: //left
+                direction = Direction.left;
+                break;
+            case 87: //up
+                direction = Direction.up;
+                break;
+            case 68: //right
+                direction = Direction.right;
+                break;
+            case 83: //down
+                direction = Direction.down;
+                break;
+        }
+        instantTurnDirection();
+    }
+
+    function instantTurnDirection()
+    {
+        if (
+            direction != directionPrevious &&
+            !(IsReverseInput())
+        )
+        {
+            move(direction);
+            intervalCount = 0;
+        }
+    }
+
+    function move(movDir)
+    {
+        drawDot(snakeBody[snakeBody.length - 1][0], snakeBody[snakeBody.length - 1][1], "grey");
+
+        var newHeadX = snakeBody[0][0];
+        var newHeadY = snakeBody[0][1];
+
+        for (var i = snakeBody.length - 1; i >= 1; i--) //值传递
+        {
+            snakeBody[i][0] = snakeBody[i - 1][0];
+            snakeBody[i][1] = snakeBody[i - 1][1];
+        }
+        drawDot(snakeBody[1][0], snakeBody[1][1], "black"); //保证蛇身前进仍然是黑色
+
+        switch (movDir)
+        {
+            case Direction.left:
+                newHeadX = newHeadX - 1 * gridSize;
+                break;
+            case Direction.up:
+                newHeadY = newHeadY - 1 * gridSize;
+                break;
+            case Direction.right:
+                newHeadX = newHeadX + 1 * gridSize;
+                break;
+            case Direction.down:
+                newHeadY = newHeadY + 1 * gridSize;
+                break;
+        }
+
+        snakeBody[0][0] = newHeadX;
+        snakeBody[0][1] = newHeadY;
+        drawDot(snakeBody[0][0], snakeBody[0][1], "blue"); //新的蛇头画蓝
+
+        directionPrevious = movDir;
+    }
+
+    function rememberLastBody(body)
+    {
+        // var l = new Array();        
+        // l[0] = body[body.length - 1][0];
+        // l[1] = body[body.length - 1][1];
+        // return l;
+        return {
+            lastBodyX: body[body.length - 1][0],
+            lastBodyY: body[body.length - 1][1]
+        };
+    }
+
+    function drawDot(x, y, color)
+    {
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, gridSize, gridSize);
+    }
+
+    function currentFoodPosition()
+    {
+        var lengthX = canvasWidth / gridSize;
+        var lengthY = canvasHeight / gridSize;
+        var isSuccess = false;
+        while (!isSuccess)
+        {
+            foodX = parseInt(Math.random() * lengthX) * gridSize;
+            foodY = parseInt(Math.random() * lengthY) * gridSize;
+            isSuccess = true;
+            for (var i = 0; i < snakeBody.length; i++)
+            {
+                if ((foodX == snakeBody[i][0]) && (foodY == snakeBody[i][1]))
+                {
+                    isSuccess = false;
+                }
+            }
+        }
+        return (foodX, foodY);
+    }
+
+    //生成随机颜色
+    function getColorRandom()
+    {
+        var c = "#";
+        for (var i = 0; i < 6; i++)
+        {
+            var cIndex = Math.round(Math.random() * 15);
+            c += cArray[cIndex];
+        }
+        return c;
+    }
+
+    function drawRandomColorFood(foodX, foodY)
+    {
+        var color = getColorRandom();
+        drawDot(foodX, foodY, color);
+    }
+
+    //生成随机食物,判断食物是否压到身子，压到则重新生成
+    function drawSingleColorFood() //生成单一颜色的食物
+    {
+        for (var i = 0; i < 1; i++)
+        {
+            currentFoodPosition();
+            foodArr[i] = new Array();
+            foodArr[i][0] = foodX;
+            foodArr[i][1] = foodY;
+            drawRandomColorFood(foodArr[i][0], foodArr[i][1]);
+        }
+        previousColor = actualColor;
+    }
+
+    function drawMultipleFood()
+    {
+        for (var i = 0; i < foodArrayLength; i++)
+        {
+            currentFoodPosition();
+            foodArr[i] = new Array();
+            foodArr[i][0] = foodX;
+            foodArr[i][1] = foodY;
+            drawRandomColorFood(foodArr[i][0], foodArr[i][1]);
+            // mySetInterval(drawRandomColorFood, 10, foodArr[i][0], foodArr[i][1]);
+        }
+    }
+
+    function spawnFood() //三分之一的概率生成闪光食物
+    {
+        var randomNum = Math.random() * 100;
+        isMultipleFood = randomNum > 0 && randomNum < 30;
+        isMultipleFood = 1;
+        foodArr = new Array();
+        if (isMultipleFood)
+        {
+            drawMultipleFood();
         }
         else
         {
-            score++;
-
+            drawSingleColorFood();
         }
-        spawnFood();
-        trySpeedUp(); //吃到食物后加速
     }
 
-    myText.innerHTML = "score:" + score;
-
-    move(direction);
-}
-
-function onTick()
-{
-    intervalCount++;
-    if (intervalCount >= moveDelay * 100)
+    function hasAteFood()
     {
-        intervalCount = 0;
-        onLogicTick();
-        onLogicTickNum++; //统计执行onLogicTick的次数
-    }
-}
-
-function addBody(body, lastBd)
-{
-    body[body.length] = new Array(lastBd.lastBodyX, lastBd.lastBodyY);
-    // body[body.length] = lastBd;     引用传递
-    drawDot(body[body.length - 1][0], body[body.length - 1][1], "black");
-}
-
-function hasAteFood()
-{
-    // return (snakeBody[0][0] == foodX) && (snakeBody[0][1] == foodY);
-    var newHeadX = snakeBody[0][0];
-    var newHeadY = snakeBody[0][1];
-    switch (direction)
-    {
-        case Direction.left:
-            newHeadX = newHeadX - 1 * gridSize;
-            break;
-        case Direction.up:
-            newHeadY = newHeadY - 1 * gridSize;
-            break;
-        case Direction.right:
-            newHeadX = newHeadX + 1 * gridSize;
-            break;
-        case Direction.down:
-            newHeadY = newHeadY + 1 * gridSize;
-            break;
-    }
-    return (newHeadX == foodX) && (newHeadY == foodY);
-}
-
-
-function onkeydown()
-{
-    key = event.keyCode;
-
-    if (!hasSetInternal) //第一次按下任意键生成定时器，且只会生成一个定时器，后面再按不再生成新的定时器
-    {
-        moveTimer = setInterval("onTick()", 10);
-        direction = Direction.right; //第一次按下任意键都向右走，后面根据按键正常上下左右走
-        hasSetInternal = true;
-        return;
-    }
-
-    switch (key)
-    {
-        case 65: //left
-            direction = Direction.left;
-            break;
-        case 87: //up
-            direction = Direction.up;
-            break;
-        case 68: //right
-            direction = Direction.right;
-            break;
-        case 83: //down
-            direction = Direction.down;
-            break;
-    }
-    instantTurnDirection();
-}
-
-function instantTurnDirection()
-{
-    if (
-        direction != directionPrevious &&
-        !(IsReverseInput())
-    )
-    {
-        move(direction);
-        intervalCount = 0;
-    }
-}
-
-function move(movDir)
-{
-    drawDot(snakeBody[snakeBody.length - 1][0], snakeBody[snakeBody.length - 1][1], "grey");
-
-    var newHeadX = snakeBody[0][0];
-    var newHeadY = snakeBody[0][1];
-
-    for (var i = snakeBody.length - 1; i >= 1; i--) //值传递
-    {
-        snakeBody[i][0] = snakeBody[i - 1][0];
-        snakeBody[i][1] = snakeBody[i - 1][1];
-    }
-    drawDot(snakeBody[1][0], snakeBody[1][1], "black"); //保证蛇身前进仍然是黑色
-
-    switch (movDir)
-    {
-        case Direction.left:
-            newHeadX = newHeadX - 1 * gridSize;
-            break;
-        case Direction.up:
-            newHeadY = newHeadY - 1 * gridSize;
-            break;
-        case Direction.right:
-            newHeadX = newHeadX + 1 * gridSize;
-            break;
-        case Direction.down:
-            newHeadY = newHeadY + 1 * gridSize;
-            break;
-    }
-
-    snakeBody[0][0] = newHeadX;
-    snakeBody[0][1] = newHeadY;
-    drawDot(snakeBody[0][0], snakeBody[0][1], "blue"); //新的蛇头画蓝
-
-    directionPrevious = movDir;
-}
-
-function rememberLastBody(body)
-{
-    // var l = new Array();        
-    // l[0] = body[body.length - 1][0];
-    // l[1] = body[body.length - 1][1];
-    // return l;
-    return {
-        lastBodyX: body[body.length - 1][0],
-        lastBodyY: body[body.length - 1][1]
-    };
-}
-
-function drawDot(x, y, color)
-{
-    ctx.fillStyle = color;
-    ctx.fillRect(x, y, gridSize, gridSize);
-}
-
-
-//生成随机食物,判断食物是否压到身子，压到则重新生成
-function drawSingleColorFood() //生成单一颜色的食物
-{
-    currentFoodPosition();
-    actualColor = getColorRandom();
-    drawDot(foodX, foodY, actualColor);
-    previousColor = actualColor;
-}
-
-function currentFoodPosition()
-{
-    var lengthX = canvasWidth / gridSize;
-    var lengthY = canvasHeight / gridSize;
-    var isSuccess = false;
-    while (!isSuccess)
-    {
-        foodX = parseInt(Math.random() * lengthX) * gridSize;
-        foodY = parseInt(Math.random() * lengthY) * gridSize;
-        isSuccess = true;
-        for (var i = 0; i < snakeBody.length; i++)
+        for (var i = 0; i < foodArr.length; i++)
         {
-            if ((foodX == snakeBody[i][0]) && (foodY == snakeBody[i][1]))
+            var newHeadX = snakeBody[0][0];
+            var newHeadY = snakeBody[0][1];
+            switch (direction)
             {
-                isSuccess = false;
+                case Direction.left:
+                    newHeadX = newHeadX - 1 * gridSize;
+                    break;
+                case Direction.up:
+                    newHeadY = newHeadY - 1 * gridSize;
+                    break;
+                case Direction.right:
+                    newHeadX = newHeadX + 1 * gridSize;
+                    break;
+                case Direction.down:
+                    newHeadY = newHeadY + 1 * gridSize;
+                    break;
+            }
+            if ((newHeadX == foodArr[i][0]) && (newHeadY == foodArr[i][1]))
+            {
+                foodArr.splice(i, 1);
+                currentFoodLength = foodArr.length;
+                move(direction);
+                addBody(snakeBody, lastBody);
+                score++;
             }
         }
-    }
-    return (foodX, foodY);
-}
-
-//生成随机颜色
-function getColorRandom()
-{
-    var c = "#";
-    for (var i = 0; i < 6; i++)
-    {
-        var cIndex = Math.round(Math.random() * 15);
-        c += cArray[cIndex];
-    }
-    return c;
-}
-
-function drawRandomColorFood()
-{
-    var color = getColorRandom();
-    drawDot(foodX, foodY, color);
-}
-
-function drawColorfulFood() //生成闪光食物
-{
-    drawColorfulFoodTimer = setInterval("drawRandomColorFood()", 10);
-}
-
-function spawnFood() //三分之一的概率生成闪光食物
-{
-    var randomNum = Math.random() * 100;
-    isColorfulFood = randomNum > 0 && randomNum < 30;
-    if (isColorfulFood)
-    {
-        currentFoodPosition();
-        drawColorfulFood();
-    }
-    else
-    {
-        drawSingleColorFood();
-    }
-}
-
-function FoodDisappear()
-{
-    drawDot(foodX, foodY, 'grey');
-    onLogicTickNum = 0;
-    spawnFood();
-}
-
-function IsReverseInput() //判断是否需要反向走才能正常继续
-{
-    var newHeadX = snakeBody[0][0];
-    var newHeadY = snakeBody[0][1];
-    switch (direction)
-    {
-        case Direction.left:
-            newHeadX = newHeadX - 1 * gridSize;
-            break;
-        case Direction.up:
-            newHeadY = newHeadY - 1 * gridSize;
-            break;
-        case Direction.right:
-            newHeadX = newHeadX + 1 * gridSize;
-            break;
-        case Direction.down:
-            newHeadY = newHeadY + 1 * gridSize;
-            break;
-    }
-    return (newHeadX == snakeBody[1][0] && newHeadY == snakeBody[1][1]);
-}
-
-
-function isDead()
-{
-    return (hasTouchedWall() || headTouchedBody())
-}
-
-function gameOver() //游戏结束后关闭定时器重新开始重新开启定时器
-{
-    alert("Game over, your final score is: " + score);
-    clearInterval(moveTimer);
-    clearInterval(drawColorfulFoodTimer);
-    onLogicTickNum = 0;
-    start();
-    hasSetInternal = false;
-}
-
-function hasTouchedWall() //判断是否撞墙，可以贴墙走，不能撞墙
-{
-    var touchedWall = false;
-    var newHeadX = snakeBody[0][0];
-    var newHeadY = snakeBody[0][1];
-    switch (direction)
-    {
-        case Direction.left:
-            newHeadX = newHeadX - 1 * gridSize;
-            break;
-        case Direction.up:
-            newHeadY = newHeadY - 1 * gridSize;
-            break;
-        case Direction.right:
-            newHeadX = newHeadX + 1 * gridSize;
-            break;
-        case Direction.down:
-            newHeadY = newHeadY + 1 * gridSize;
-            break;
-    }
-
-    if (
-        newHeadX < 0 ||
-        newHeadY < 0 ||
-        (newHeadX > canvasWidth - gridSize) ||
-        (newHeadY > canvasHeight - gridSize)
-    )
-    {
-        touchedWall = true;
-    }
-    return touchedWall;
-}
-
-function headTouchedBody()
-{
-    var touchedBody = false;
-    var newHeadX = snakeBody[0][0];
-    var newHeadY = snakeBody[0][1];
-    switch (direction)
-    {
-        case Direction.left:
-            newHeadX = newHeadX - 1 * gridSize;
-            break;
-        case Direction.up:
-            newHeadY = newHeadY - 1 * gridSize;
-            break;
-        case Direction.right:
-            newHeadX = newHeadX + 1 * gridSize;
-            break;
-        case Direction.down:
-            newHeadY = newHeadY + 1 * gridSize;
-            break;
-    }
-    for (var i = 2; i < snakeBody.length; i++)
-    {
-        if ((newHeadX == snakeBody[i][0]) && (newHeadY == snakeBody[i][1]))
+        if (currentFoodLength <= 0)
         {
-            touchedBody = true;
-            break;
+            spawnFood();
+            currentFoodLength = foodArr.length;
+
         }
     }
-    return touchedBody;
-}
 
-function trySpeedUp() //每3分为一个速度区间，得分越高速度越快
-{
-    speedLevel = Math.floor(score / 3);
-    moveDelay = initialMoveDelay - speedLevel * moveDelayDecrease;
-    if (moveDelay < minMoveDelay)
+    function IsReverseInput() //判断是否需要反向走才能正常继续
     {
-        moveDelay = minMoveDelay;
+        var newHeadX = snakeBody[0][0];
+        var newHeadY = snakeBody[0][1];
+        switch (direction)
+        {
+            case Direction.left:
+                newHeadX = newHeadX - 1 * gridSize;
+                break;
+            case Direction.up:
+                newHeadY = newHeadY - 1 * gridSize;
+                break;
+            case Direction.right:
+                newHeadX = newHeadX + 1 * gridSize;
+                break;
+            case Direction.down:
+                newHeadY = newHeadY + 1 * gridSize;
+                break;
+        }
+        return (newHeadX == snakeBody[1][0] && newHeadY == snakeBody[1][1]);
     }
-}
-</script>
+
+
+    function isDead()
+    {
+        return (hasTouchedWall() || headTouchedBody())
+    }
+
+    function gameOver() //游戏结束后关闭定时器重新开始重新开启定时器
+    {
+        alert("Game over, your final score is: " + score);
+        clearInterval(moveTimer);
+        clearInterval(drawColorfulFoodTimer);
+        onLogicTickNum = 0;
+        start();
+        hasSetInternal = false;
+    }
+
+    function hasTouchedWall() //判断是否撞墙，可以贴墙走，不能撞墙
+    {
+        var touchedWall = false;
+        var newHeadX = snakeBody[0][0];
+        var newHeadY = snakeBody[0][1];
+        switch (direction)
+        {
+            case Direction.left:
+                newHeadX = newHeadX - 1 * gridSize;
+                break;
+            case Direction.up:
+                newHeadY = newHeadY - 1 * gridSize;
+                break;
+            case Direction.right:
+                newHeadX = newHeadX + 1 * gridSize;
+                break;
+            case Direction.down:
+                newHeadY = newHeadY + 1 * gridSize;
+                break;
+        }
+
+        if (
+            newHeadX < 0 ||
+            newHeadY < 0 ||
+            (newHeadX > canvasWidth - gridSize) ||
+            (newHeadY > canvasHeight - gridSize)
+        )
+        {
+            touchedWall = true;
+        }
+        return touchedWall;
+    }
+
+    function headTouchedBody()
+    {
+        var touchedBody = false;
+        var newHeadX = snakeBody[0][0];
+        var newHeadY = snakeBody[0][1];
+        switch (direction)
+        {
+            case Direction.left:
+                newHeadX = newHeadX - 1 * gridSize;
+                break;
+            case Direction.up:
+                newHeadY = newHeadY - 1 * gridSize;
+                break;
+            case Direction.right:
+                newHeadX = newHeadX + 1 * gridSize;
+                break;
+            case Direction.down:
+                newHeadY = newHeadY + 1 * gridSize;
+                break;
+        }
+        for (var i = 2; i < snakeBody.length; i++)
+        {
+            if ((newHeadX == snakeBody[i][0]) && (newHeadY == snakeBody[i][1]))
+            {
+                touchedBody = true;
+                break;
+            }
+        }
+        return touchedBody;
+    }
+
+    function trySpeedUp() //每3分为一个速度区间，得分越高速度越快
+    {
+        speedLevel = Math.floor(score / 3);
+        moveDelay = initialMoveDelay - speedLevel * moveDelayDecrease;
+        if (moveDelay < minMoveDelay)
+        {
+            moveDelay = minMoveDelay;
+        }
+    }
+    </script>
+</body>
 
 </html>
