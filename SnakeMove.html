@@ -182,6 +182,16 @@
             move(direction);
             intervalCount = 0;
         }
+        for (var i = 0; i < foodArr.length; i++)
+        {
+            if ((snakeBody[0][0] == foodArr[i][0]) && (snakeBody[0][1] == foodArr[i][1]))
+            {
+                foodArr.splice(i, 1);
+                currentFoodLength = foodArr.length;
+                addBody(snakeBody, lastBody);
+                score++;
+            }
+        }
     }
 
     function move(movDir)
@@ -323,25 +333,25 @@
 
     function hasAteFood()
     {
+        var newHeadX = snakeBody[0][0];
+        var newHeadY = snakeBody[0][1];
+        switch (direction)
+        {
+            case Direction.left:
+                newHeadX = newHeadX - 1 * gridSize;
+                break;
+            case Direction.up:
+                newHeadY = newHeadY - 1 * gridSize;
+                break;
+            case Direction.right:
+                newHeadX = newHeadX + 1 * gridSize;
+                break;
+            case Direction.down:
+                newHeadY = newHeadY + 1 * gridSize;
+                break;
+        }
         for (var i = 0; i < foodArr.length; i++)
         {
-            var newHeadX = snakeBody[0][0];
-            var newHeadY = snakeBody[0][1];
-            switch (direction)
-            {
-                case Direction.left:
-                    newHeadX = newHeadX - 1 * gridSize;
-                    break;
-                case Direction.up:
-                    newHeadY = newHeadY - 1 * gridSize;
-                    break;
-                case Direction.right:
-                    newHeadX = newHeadX + 1 * gridSize;
-                    break;
-                case Direction.down:
-                    newHeadY = newHeadY + 1 * gridSize;
-                    break;
-            }
             if ((newHeadX == foodArr[i][0]) && (newHeadY == foodArr[i][1]))
             {
                 foodArr.splice(i, 1);
