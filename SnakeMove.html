@@ -50,8 +50,6 @@
     var moveTimer;
     var drawColorfulFoodTimer;
     var intervalCount = 0;
-    var onLogicTickNum = 0;
-    var onLogicTickNumLimit = 10;
 
     var foodX, foodY;
     var isColorfulFood;
@@ -116,7 +114,6 @@
         lastBody = rememberLastBody(snakeBody);
 
         hasAteFood();
-
         trySpeedUp(); //吃到食物后加速
 
         myText.innerHTML = "score:" + score;
@@ -131,7 +128,6 @@
         {
             intervalCount = 0;
             onLogicTick();
-            onLogicTickNum++; //统计执行onLogicTick的次数
         }
     }
 
@@ -180,14 +176,17 @@
         )
         {
             move(direction);
-            intervalCount = 0;
+            intervalCount = 0; //无法保证按钮按钮的瞬间是否是intervalCount=0的时刻，因此按下按钮后重新计数保证后续前进速度正确
+            lastBody = rememberLastBody(snakeBody);
         }
-        for (var i = 0; i < foodArr.length; i++)
+
+        for (var i = 0; i < foodArr.length; i++) //立即转向若吃到食物加分
         {
             if ((snakeBody[0][0] == foodArr[i][0]) && (snakeBody[0][1] == foodArr[i][1]))
             {
                 foodArr.splice(i, 1);
                 currentFoodLength = foodArr.length;
+                move(direction);
                 addBody(snakeBody, lastBody);
                 score++;
             }
@@ -291,6 +290,7 @@
     //生成随机食物,判断食物是否压到身子，压到则重新生成
     function drawSingleColorFood() //生成单一颜色的食物
     {
+        foodArr = new Array();
         for (var i = 0; i < 1; i++)
         {
             currentFoodPosition();
@@ -304,6 +304,7 @@
 
     function drawMultipleFood()
     {
+        foodArr = new Array();
         for (var i = 0; i < foodArrayLength; i++)
         {
             currentFoodPosition();
@@ -318,9 +319,7 @@
     function spawnFood() //三分之一的概率生成闪光食物
     {
         var randomNum = Math.random() * 100;
-        isMultipleFood = randomNum > 0 && randomNum < 30;
-        isMultipleFood = 1;
-        foodArr = new Array();
+        isMultipleFood = randomNum > 0 && randomNum < 50;
         if (isMultipleFood)
         {
             drawMultipleFood();
@@ -402,7 +401,6 @@
         alert("Game over, your final score is: " + score);
         clearInterval(moveTimer);
         clearInterval(drawColorfulFoodTimer);
-        onLogicTickNum = 0;
         start();
         hasSetInternal = false;
     }
