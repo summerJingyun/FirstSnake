@@ -30,6 +30,8 @@
     var moveDelayDecrease = 0.01;
     var speedLevel = 0;
     var score = 0;
+    var a = 3;
+    var b = 1;
 
     var gridSize = 10;
     var initalSnakeLength = 3;
@@ -62,10 +64,15 @@
     var previousColor;
     var multipleFoodLength = 3;
 
+    var A = 30;
+    var B = 60;
+    var C = 100;
+
     var cArray = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
 
     foodArr = new Array();
     snakeBody = new Array();
+    drawColorfulFoodTimer = new Array();
 
     initial(); //初始化
     start();
@@ -96,12 +103,22 @@
     function onClickBtn() //点击restart按钮重新开始游戏
     {
         clearInterval(moveTimer);
+        clearInterval(drawColorfulFoodTimer);
         start();
         hasSetInternal = false;
     }
 
     function onLogicTick()
     {
+        for (var i = 0; i < foodArr.length; i++)
+        {
+            if (foodArr[i][2] == 1)
+            {
+                drawRandomColorFood(foodArr[i][0], foodArr[i][1]);
+            }
+
+        }
+
         if (isDead())
         {
             gameOver();
@@ -300,8 +317,8 @@
     function spawnMultipleSingleColorFood()
     {
         spawnFoodArr(multipleFoodLength);
+        console.log("foodArr:" + foodArr);
     }
-
 
     function spawnFoodArr(foodLength)
     {
@@ -311,21 +328,37 @@
             foodArr[i] = new Array();
             foodArr[i][0] = foodX;
             foodArr[i][1] = foodY;
+            if (isColorfulFood)
+            {
+                foodArr[i][2] = 1;
+            }
+            else
+            {
+                foodArr[i][2] = 0;
+            }
+
             drawRandomColorFood(foodArr[i][0], foodArr[i][1]);
         }
     }
 
-    function spawnFood() //三分之一的概率生成闪光食物
+    function spawnFood() //以不同的概率生成不同种食物
     {
-        var randomNum = Math.random() * 100;
-        isMultipleSingleColorFood = randomNum > 0 && randomNum < 50;
-        if (isMultipleSingleColorFood)
+        var randomNum = Math.random() * C; //C=100
+        console.log("randomNum:" + randomNum);
+        var probilityA = randomNum > 0 && randomNum < A; //A=30
+        var probilityB = randomNum > A && randomNum < B; //B=60
+        isColorfulFood = randomNum > B && randomNum < C;
+        if (probilityA)
         {
-            spawnMultipleSingleColorFood();
+            spawnSingleColorFood(); //0.3的概率生成一个食物
         }
-        else
+        if (probilityB)
         {
-            spawnSingleColorFood();
+            spawnMultipleSingleColorFood(); //0.3的概率生成多个食物
+        }
+        if (isColorfulFood)
+        {
+            spawnMultipleSingleColorFood(); //0.4的概率生成多个闪光食物
         }
     }
 
@@ -339,7 +372,15 @@
                 foodArr.splice(i, 1);
                 move(direction);
                 addBody(snakeBody, lastBody);
-                score++;
+                if (isColorfulFood)
+                {
+                    score = score + a; //吃到闪光食物每个加a分，a=3
+
+                }
+                else
+                {
+                    score = score + b; //吃到普通食物每个加b分，b=1
+                }
             }
         }
         if (foodArr.length <= 0)
@@ -364,6 +405,7 @@
     {
         alert("Game over, your final score is: " + score);
         clearInterval(moveTimer);
+        clearInterval(drawColorfulFoodTimer);
         start();
         hasSetInternal = false;
     }
