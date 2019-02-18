@@ -107,6 +107,10 @@
         {
             snakeBody.splice(i, 1);
         }
+        for (var i = 0; i < foodArr.length; i++) //重新开始时把foodArr数组清空
+        {
+            foodArr.splice(i, 1);
+        }
         start();
         // hasSetInternal = false;
     }
@@ -416,6 +420,10 @@
         for (var i = 0; i < snakeBody.length; i++) //游戏结束后把snakeBody数组清空
         {
             snakeBody.splice(i, 1);
+        }
+        for (var i = 0; i < foodArr.length; i++) //重新开始时把foodArr数组清空
+        {
+            foodArr.splice(i, 1);
         }
         start();
         // hasSetInternal = false;
