@@ -43,7 +43,7 @@
     Direction.right = 3;
     Direction.none = 4;
     var directionPrevious = Direction.none;
-    var direction = Direction.right; // Under initial codition,it won't move  
+    var direction;
 
     var snakeBody;
     var lastBody;
@@ -52,10 +52,9 @@
     var headY = 200;
     var newHeadX, newHeadY;
 
-    var hasSetInternal = false;
     var moveTimer;
-    var drawColorfulFoodTimer;
     var intervalCount = 0;
+    var firstOnKeyDown = false;
 
     var foodArr;
     var foodX, foodY;
@@ -72,7 +71,6 @@
 
     foodArr = new Array();
     snakeBody = new Array();
-    drawColorfulFoodTimer = new Array();
 
     initial(); //初始化
     start();
@@ -84,6 +82,8 @@
 
     function start()
     {
+        moveTimer = setInterval("onTick()", 10);
+        direction = Direction.right;
         ctx.fillStyle = "grey";
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
         score = 0; //游戏结束重新开始分数清零
@@ -103,9 +103,12 @@
     function onClickBtn() //点击restart按钮重新开始游戏
     {
         clearInterval(moveTimer);
-        clearInterval(drawColorfulFoodTimer);
+        for (var i = 0; i < snakeBody.length; i++) //重新开始时把snakeBody数组清空
+        {
+            snakeBody.splice(i, 1);
+        }
         start();
-        hasSetInternal = false;
+        // hasSetInternal = false;
     }
 
     function onLogicTick()
@@ -116,7 +119,6 @@
             {
                 drawRandomColorFood(foodArr[i][0], foodArr[i][1]);
             }
-
         }
 
         if (isDead())
@@ -161,11 +163,11 @@
     {
         key = event.keyCode;
 
-        if (!hasSetInternal) //第一次按下任意键生成定时器，且只会生成一个定时器，后面再按不再生成新的定时器
+        if (!firstOnKeyDown)
         {
-            moveTimer = setInterval("onTick()", 10);
+            // moveTimer = setInterval("onTick()", 10);
             direction = Direction.right; //第一次按下任意键都向右走，后面根据按键正常上下左右走
-            hasSetInternal = true;
+            firstOnKeyDown = true;
             return;
         }
 
@@ -234,6 +236,8 @@
 
     function move(movDir)
     {
+        newHeadX = snakeBody[0][0];
+        newHeadY = snakeBody[0][1];
         drawDot(snakeBody[snakeBody.length - 1][0], snakeBody[snakeBody.length - 1][1], "grey");
 
         for (var i = snakeBody.length - 1; i >= 1; i--) //值传递
@@ -268,6 +272,7 @@
         ctx.fillRect(x, y, gridSize, gridSize);
     }
 
+    //生成随机食物,判断食物是否压到身子，压到则重新生成
     function currentFoodPosition()
     {
         var lengthX = canvasWidth / gridSize;
@@ -307,7 +312,6 @@
         drawDot(foodX, foodY, color);
     }
 
-    //生成随机食物,判断食物是否压到身子，压到则重新生成
     function spawnSingleColorFood() //生成单一颜色的食物
     {
         spawnFoodArr(1);
@@ -317,7 +321,6 @@
     function spawnMultipleSingleColorFood()
     {
         spawnFoodArr(multipleFoodLength);
-        console.log("foodArr:" + foodArr);
     }
 
     function spawnFoodArr(foodLength)
@@ -375,7 +378,6 @@
                 if (isColorfulFood)
                 {
                     score = score + a; //吃到闪光食物每个加a分，a=3
-
                 }
                 else
                 {
@@ -395,7 +397,6 @@
         return (newHeadX == snakeBody[1][0] && newHeadY == snakeBody[1][1]);
     }
 
-
     function isDead()
     {
         return (hasTouchedWall() || headTouchedBody())
@@ -405,9 +406,12 @@
     {
         alert("Game over, your final score is: " + score);
         clearInterval(moveTimer);
-        clearInterval(drawColorfulFoodTimer);
+        for (var i = 0; i < snakeBody.length; i++) //游戏结束后把snakeBody数组清空
+        {
+            snakeBody.splice(i, 1);
+        }
         start();
-        hasSetInternal = false;
+        // hasSetInternal = false;
     }
 
     function hasTouchedWall() //判断是否撞墙，可以贴墙走，不能撞墙
