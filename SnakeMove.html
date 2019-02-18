@@ -197,8 +197,8 @@
         )
         {
             move(direction);
-            intervalCount = 0; //无法保证按钮按钮的瞬间是否是intervalCount=0的时刻，因此按下按钮后重新计数保证后续前进速度正确
-            lastBody = rememberLastBody(snakeBody);
+            intervalCount = 0; //无法保证按下按钮的瞬间是否是intervalCount=0的时刻，因此按下按钮后重新计数保证后续前进速度正确
+            lastBody = rememberLastBody(snakeBody); //立即转向后蛇尾发生变化，重新获取新值
         }
 
         for (var i = 0; i < foodArr.length; i++) //立即转向若吃到食物加分
@@ -208,7 +208,14 @@
                 foodArr.splice(i, 1);
                 move(direction);
                 addBody(snakeBody, lastBody);
-                score++;
+                if (isColorfulFood)
+                {
+                    score = score + a; //立即转向后吃到闪光食物每个加a分，a=3
+                }
+                else
+                {
+                    score = score + b; //立即转向后吃到普通食物每个加b分，b=1
+                }
             }
         }
     }
