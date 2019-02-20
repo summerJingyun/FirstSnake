@@ -47,7 +47,6 @@
     var moveTimer;
     var intervalCount = 0;
     var firstOnKeyDown = false;
-    var instantTurnDirection = false;
     var foodArr;
     var foodX, foodY;
     var isColorfulFood;
@@ -186,17 +185,18 @@
 
     function instantTurnDirection()
     {
-        {
-            instantTurnDirection = true;
-            move(direction);
-            intervalCount = 0; //无法保证按下按钮的瞬间是否是intervalCount=0的时刻，因此按下按钮后重新计数保证后续前进速度正确
-            lastBody = rememberLastBody(snakeBody); //立即转向后蛇尾发生变化，重新获取新值
-        }
         if (isDead())
         {
             gameOver();
             return;
         }
+        else
+        {
+            move(direction);
+            intervalCount = 0; //无法保证按下按钮的瞬间是否是intervalCount=0的时刻，因此按下按钮后重新计数保证后续前进速度正确
+            lastBody = rememberLastBody(snakeBody); //立即转向后蛇尾发生变化，重新获取新值
+        }
+
         for (var i = 0; i < foodArr.length; i++) //立即转向若吃到食物加分
         {
             if ((snakeBody[0][0] == foodArr[i][0]) && (snakeBody[0][1] == foodArr[i][1]))
@@ -420,10 +420,7 @@
     function hasTouchedWall() //判断是否撞墙，可以贴墙走，不能撞墙
     {
         var touchedWall = false;
-        if (!instantTurnDirection)
-        {
-            newHeadPosition(direction);
-        }
+        newHeadPosition(direction);
         if (
             newHeadX < 0 ||
             newHeadY < 0 ||
@@ -439,10 +436,7 @@
     function headTouchedBody()
     {
         var touchedBody = false;
-        if (!instantTurnDirection)
-        {
-            newHeadPosition(direction);
-        }
+        newHeadPosition(direction);
         for (var i = 1; i < snakeBody.length; i++)
         {
             if ((newHeadX == snakeBody[i][0]) && (newHeadY == snakeBody[i][1]))
