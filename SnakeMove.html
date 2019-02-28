@@ -22,7 +22,7 @@
     var canvasWidth = 400;
     var canvasHeight = 400;
     var minMoveDelay = 0.01;
-    var initialMoveDelay = 0.5;
+    var initialMoveDelay = 0.01;
     var moveDelay = initialMoveDelay;
     var moveDelayDecrease = 0.01;
     var speedLevel = 0;
@@ -30,7 +30,7 @@
     var a = 3;
     var b = 1;
     var gridSize = 10;
-    var initalSnakeLength = 6;
+    var initalSnakeLength = 3;
     var Direction = {};
     Direction.up = 0;
     Direction.down = 1;
@@ -59,6 +59,10 @@
     var cArray = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
     foodArr = new Array();
     snakeBody = new Array();
+
+    var distanceX;
+    var distanceX;
+
     initial(); //初始化
     start();
 
@@ -111,20 +115,20 @@
                 drawRandomColorFood(foodArr[i][0], foodArr[i][1]);
             }
         }
+
+        autoSelectDirection();
+
         if (isDead())
         {
             gameOver();
             return;
         }
-        if (IsReverseInput())
-        {
-            direction = directionPrevious; //判断当按下按键， 若蛇朝该方向走会踩到蛇身时，不让它朝此方向走，而继续按照原来的方向走
-        }
+
         lastBody = rememberLastBody(snakeBody);
         hasAteFood();
         trySpeedUp(); //吃到食物后加速
         myText.innerHTML = "score:" + score;
-        move(direction);
+        autoMove();
     }
 
     function onTick()
@@ -346,7 +350,6 @@
     function spawnFood() //以不同的概率生成不同种食物
     {
         var randomNum = Math.random() * C; //C=100
-        console.log("randomNum:" + randomNum);
         var probilityA = randomNum > 0 && randomNum < A; //A=30
         var probilityB = randomNum > A && randomNum < B; //B=60
         isColorfulFood = randomNum > B && randomNum < C;
@@ -356,11 +359,13 @@
         }
         if (probilityB)
         {
-            spawnMultipleSingleColorFood(); //0.3的概率生成多个食物
+            spawnSingleColorFood();
+            // spawnMultipleSingleColorFood(); //0.3的概率生成多个食物
         }
         if (isColorfulFood)
         {
-            spawnMultipleSingleColorFood(); //0.4的概率生成多个闪光食物
+            spawnSingleColorFood();
+            // spawnMultipleSingleColorFood(); //0.4的概率生成多个闪光食物
         }
     }
 
@@ -372,7 +377,7 @@
             if ((newHeadX == foodArr[i][0]) && (newHeadY == foodArr[i][1]))
             {
                 foodArr.splice(i, 1);
-                move(direction);
+                autoMove();
                 addBody(snakeBody, lastBody);
                 if (isColorfulFood)
                 {
@@ -398,7 +403,8 @@
 
     function isDead()
     {
-        return (hasTouchedWall() || headTouchedBody())
+        return (headTouchedBody());
+        // return (hasTouchedWall() || headTouchedBody())
     }
 
     function gameOver() //游戏结束后关闭定时器重新开始重新开启定时器
@@ -457,6 +463,58 @@
             moveDelay = minMoveDelay;
         }
     }
+
+    function autoSelectHorizontalDirction()
+    {
+         if (distanceX > 0)
+            direction = Direction.right;
+        else if (distanceX < 0)
+            direction = Direction.left;
+        if (headTouchedBody())
+        {
+            if(distanceY<0)
+            direction = Direction.up;
+            else
+            direction=Direction.down;
+        }
+
+    }
+
+    function autoSelectVerticalDirction()
+    {
+        if (distanceY > 0)
+            direction = Direction.down;
+        else if (distanceY < 0)
+            direction = Direction.up;
+        if (headTouchedBody())
+        {
+            direction = Direction.left;
+        }
+
+    }
+
+    function autoSelectDirection()
+    {
+        distanceX = foodArr[0][0] - snakeBody[0][0];
+        distanceY = foodArr[0][1] - snakeBody[0][1];
+        if(distanceX!=0)
+        {
+            autoSelectHorizontalDirction();
+        }
+        else
+        {
+            autoSelectVerticalDirction();
+        }
+    }
+
+    function autoMove()
+    {
+        if ((!IsReverseInput()) && (!headTouchedBody()) && (!hasTouchedWall()))
+        {
+            move(direction);
+        }
+    }
+
     </script>
 </body>
 
