@@ -94,14 +94,8 @@
     function onClickBtn() //点击restart按钮重新开始游戏
     {
         clearInterval(moveTimer);
-        for (var i = 0; i < snakeBody.length; i++) //重新开始时把snakeBody数组清空
-        {
-            snakeBody.splice(i, 1);
-        }
-        for (var i = 0; i < foodArr.length; i++) //重新开始时把foodArr数组清空
-        {
-            foodArr.splice(i, 1);
-        }
+        snakeBody.splice(0, snakeBody.length); //游戏结束后把数组清空
+        foodArr.splice(0, foodArr.length);
         start();
         // hasSetInternal = false;
     }
@@ -411,14 +405,8 @@
     {
         alert("Game over, your final score is: " + score);
         clearInterval(moveTimer);
-        for (var i = 0; i < snakeBody.length; i++) //游戏结束后把snakeBody数组清空
-        {
-            snakeBody.splice(i, 1);
-        }
-        for (var i = 0; i < foodArr.length; i++) //重新开始时把foodArr数组清空
-        {
-            foodArr.splice(i, 1);
-        }
+        snakeBody.splice(0, snakeBody.length); //游戏结束后把数组清空
+        foodArr.splice(0, foodArr.length);
         start();
         // hasSetInternal = false;
     }
@@ -466,16 +454,16 @@
 
     function autoSelectHorizontalDirction()
     {
-         if (distanceX > 0)
+        if (distanceX > 0)
             direction = Direction.right;
         else if (distanceX < 0)
             direction = Direction.left;
         if (headTouchedBody())
         {
-            if(distanceY<0)
-            direction = Direction.up;
+            if (distanceY < 0)
+                direction = Direction.up;
             else
-            direction=Direction.down;
+                direction = Direction.down;
         }
 
     }
@@ -497,7 +485,7 @@
     {
         distanceX = foodArr[0][0] - snakeBody[0][0];
         distanceY = foodArr[0][1] - snakeBody[0][1];
-        if(distanceX!=0)
+        if (distanceX != 0)
         {
             autoSelectHorizontalDirction();
         }
@@ -514,7 +502,6 @@
             move(direction);
         }
     }
-
     </script>
 </body>
 
