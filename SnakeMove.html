@@ -53,15 +53,30 @@
     var actualColor;
     var previousColor;
     var multipleFoodLength = 3;
-    var A = 30;
+    var A = 100;
     var B = 60;
     var C = 100;
     var cArray = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
     foodArr = new Array();
     snakeBody = new Array();
+    // var snakeBody = [
+    //     [200, 200],
+    //     [190, 200],
+    //     [190, 210],
+    //     [200, 210],
+    //     [210, 210],
+    //     [220, 210],
+    //     [220, 200],
+    //     [220, 190],
+    //     [210, 190],
+    //     [200, 190],
+    //     [190, 190]
+    // ]
 
     var distanceX;
     var distanceX;
+
+    var reverseDirection;
 
     initial(); //初始化
     start();
@@ -94,8 +109,8 @@
     function onClickBtn() //点击restart按钮重新开始游戏
     {
         clearInterval(moveTimer);
-        snakeBody.splice(0, snakeBody.length); //游戏结束后把数组清空
-        foodArr.splice(0, foodArr.length);
+        snakeBody.splice(0, snakeBody.length);
+        foodArr.splice(0, foodArr.length); //重新开始时清空数组
         start();
         // hasSetInternal = false;
     }
@@ -114,12 +129,13 @@
 
         if (isDead())
         {
+            move(direction);
             gameOver();
             return;
         }
 
         lastBody = rememberLastBody(snakeBody);
-        hasAteFood();
+        hasAteFood(); //吃到食物后加分且生成新的食物，重新判断方向
         trySpeedUp(); //吃到食物后加速
         myText.innerHTML = "score:" + score;
         autoMove();
@@ -212,7 +228,6 @@
                 }
             }
         }
-
     }
 
     function newHeadPosition(movDir)
@@ -290,6 +305,8 @@
                 }
             }
         }
+        // foodx = 100;
+        // foodY = 200;
         return (foodX, foodY);
     }
     //生成随机颜色
@@ -345,22 +362,22 @@
     {
         var randomNum = Math.random() * C; //C=100
         var probilityA = randomNum > 0 && randomNum < A; //A=30
-        var probilityB = randomNum > A && randomNum < B; //B=60
-        isColorfulFood = randomNum > B && randomNum < C;
+        // var probilityB = randomNum > A && randomNum < B; //B=60
+        // isColorfulFood = randomNum > B && randomNum < C;
         if (probilityA)
         {
             spawnSingleColorFood(); //0.3的概率生成一个食物
         }
-        if (probilityB)
-        {
-            spawnSingleColorFood();
-            // spawnMultipleSingleColorFood(); //0.3的概率生成多个食物
-        }
-        if (isColorfulFood)
-        {
-            spawnSingleColorFood();
-            // spawnMultipleSingleColorFood(); //0.4的概率生成多个闪光食物
-        }
+        // if (probilityB)
+        // {
+        //     spawnSingleColorFood();
+        //     // spawnMultipleSingleColorFood(); //0.3的概率生成多个食物
+        // }
+        // if (isColorfulFood)
+        // {
+        //     spawnSingleColorFood();
+        //     // spawnMultipleSingleColorFood(); //0.4的概率生成多个闪光食物
+        // }
     }
 
     function hasAteFood()
@@ -386,6 +403,7 @@
         if (foodArr.length <= 0)
         {
             spawnFood();
+            autoSelectDirection(); //当食物被吃完后生成新的食物，重新选择方向
         }
     }
 
@@ -397,18 +415,16 @@
 
     function isDead()
     {
-        return (headTouchedBody());
-        // return (hasTouchedWall() || headTouchedBody())
+        return (hasTouchedWall() || headTouchedBody())
     }
 
     function gameOver() //游戏结束后关闭定时器重新开始重新开启定时器
     {
         alert("Game over, your final score is: " + score);
         clearInterval(moveTimer);
-        snakeBody.splice(0, snakeBody.length); //游戏结束后把数组清空
-        foodArr.splice(0, foodArr.length);
+        snakeBody.splice(0, snakeBody.length);
+        foodArr.splice(0, foodArr.length); //游戏结束后清空数组
         start();
-        // hasSetInternal = false;
     }
 
     function hasTouchedWall() //判断是否撞墙，可以贴墙走，不能撞墙
@@ -452,18 +468,48 @@
         }
     }
 
+    /*走的原则是靠近食物，先水平后竖直。假设开始时食物在右上方，首先根据水平相对位置，判定蛇的方向为右，走到水平方向与食物对齐后再走竖直方向，直至吃到食物。
+    如果向右走会踩身子放弃，根据竖直方向判定蛇的方向为上，若向上走还是会踩到身子放弃，说明此时蛇不能先走右和上。采用迂回战术，先让蛇向左走，如果向左走还踩
+    身子放弃左，让其向下走，若此时都行不通则无路可走，死亡。*/
+
     function autoSelectHorizontalDirction()
     {
         if (distanceX > 0)
+        {
             direction = Direction.right;
+            reverseDirection = Direction.left;
+        }
         else if (distanceX < 0)
+        {
             direction = Direction.left;
-        if (headTouchedBody())
+            reverseDirection = Direction.right;
+        }
+        if (isDead())
         {
             if (distanceY < 0)
+            {
                 direction = Direction.up;
+                if (isDead())
+                {
+                    direction = reverseDirection;
+                    if (isDead())
+                    {
+                        direction = Direction.down;
+                    }
+                }
+            }
             else
+            {
                 direction = Direction.down;
+                if (isDead())
+                {
+                    direction = reverseDirection;
+                    if (isDead())
+                    {
+                        direction = Direction.up;
+                    }
+                }
+            }
         }
 
     }
@@ -471,12 +517,26 @@
     function autoSelectVerticalDirction()
     {
         if (distanceY > 0)
+        {
             direction = Direction.down;
+            reverseDirection = Direction.up;
+        }
         else if (distanceY < 0)
+        {
             direction = Direction.up;
-        if (headTouchedBody())
+            reverseDirection = Direction.down;
+        }
+        if (isDead())
         {
             direction = Direction.left;
+            if (isDead())
+            {
+                direction = Direction.right;
+                if (isDead())
+                {
+                    direction = reverseDirection;
+                }
+            }
         }
 
     }
@@ -497,10 +557,7 @@
 
     function autoMove()
     {
-        if ((!IsReverseInput()) && (!headTouchedBody()) && (!hasTouchedWall()))
-        {
-            move(direction);
-        }
+        move(direction);
     }
     </script>
 </body>
