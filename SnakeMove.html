@@ -9,15 +9,18 @@
 <body>
     <canvas id="myCanvas" width="400" height="400" style="border:1px solid #c3c3c3;">
     </canvas>
-    <div id="myText" style="position:absolute;left:10px;top:420px">score:0</div>
+    <div id="myTextScore" style="position:absolute;left:10px;top:440px">score</div>
     <div class="container" style="position:absolute;left:350px;top:420px">
         <form>
             <button type="button" value="Restart" id="btn" onclick="onClickBtn()"> Restart</button>
         </form>
     </div>
+    <div id="myTextCurrentRound" style="position:absolute;left:10px;top:420px">currentRound</div>
+    <div id="myTextAveScore" style="position:absolute;left:10px;top:470px">aveScore</div>
+    <div id="myTextMaxScore" style="position:absolute;left:10px;top:500px">maxScore</div>
+    <div id="myTextStandardDeviation" style="position:absolute;left:10px;top:530px">standardDeviation</div>
     <script type="text/javascript">
     var myCanvas = document.getElementById("myCanvas");
-    var m_text = document.getElementById("score");
     var ctx = myCanvas.getContext("2d");
     var canvasWidth = 400;
     var canvasHeight = 400;
@@ -59,24 +62,19 @@
     var cArray = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
     foodArr = new Array();
     snakeBody = new Array();
-    // var snakeBody = [
-    //     [200, 200],
-    //     [190, 200],
-    //     [190, 210],
-    //     [200, 210],
-    //     [210, 210],
-    //     [220, 210],
-    //     [220, 200],
-    //     [220, 190],
-    //     [210, 190],
-    //     [200, 190],
-    //     [190, 190]
-    // ]
 
     var distanceX;
     var distanceX;
 
     var reverseDirection;
+
+    var round = 0;
+    roundArr = new Array();
+    scoreArr = new Array();
+    var aveScore = 0;
+    var maxScore = 0;
+    var stdDev = 0.00;
+    temp = new Array();
 
     initial(); //初始化
     start();
@@ -94,7 +92,8 @@
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
         score = 0; //游戏结束重新开始分数清零
         moveDelay = initialMoveDelay;
-        myText.innerHTML = "score:" + score;
+        myTextScore.innerHTML = "score:" + score;
+
         for (var i = 0; i < initalSnakeLength; i++)
         {
             snakeBody[i] = new Array();
@@ -104,15 +103,24 @@
         }
         drawDot(snakeBody[0][0], snakeBody[0][1], "blue") //初始化将蛇头画蓝，蛇身画黑
         spawnFood();
+        round++;
+        myTextCurrentRound.innerHTML = "currentRound:" + round;
+        roundArr[roundArr.length] = round; //游戏开始时将局数记入数组中
+        myTextAveScore.innerHTML = "aveScore:" + aveScore;
+        myTextMaxScore.innerHTML = "maxScore:" + maxScore;
+        myTextStandardDeviation.innerHTML = "standardDeviation:" + stdDev;
     }
 
     function onClickBtn() //点击restart按钮重新开始游戏
     {
-        clearInterval(moveTimer);
-        snakeBody.splice(0, snakeBody.length);
-        foodArr.splice(0, foodArr.length); //重新开始时清空数组
-        start();
-        // hasSetInternal = false;
+        gameOver();
+        getAveScore();
+        getMaxScore();
+        getStandardDeviation();
+        myTextScore.innerHTML = "score:" + score;
+        myTextAveScore.innerHTML = "aveScore:" + aveScore;
+        myTextMaxScore.innerHTML = "maxScore:" + maxScore;
+        myTextStandardDeviation.innerHTML = "standardDeviation:" + stdDev;
     }
 
     function onLogicTick()
@@ -126,17 +134,24 @@
         }
 
         autoSelectDirection();
+        getAveScore();
+        getMaxScore();
+        getStandardDeviation();
 
         if (isDead())
         {
             gameOver();
+            stop();
             return;
         }
 
         lastBody = rememberLastBody(snakeBody);
         hasAteFood(); //吃到食物后加分且生成新的食物，重新判断方向
         trySpeedUp(); //吃到食物后加速
-        myText.innerHTML = "score:" + score;
+        myTextScore.innerHTML = "score:" + score;
+        myTextAveScore.innerHTML = "aveScore:" + aveScore;
+        myTextMaxScore.innerHTML = "maxScore:" + maxScore;
+        myTextStandardDeviation.innerHTML = "standardDeviation:" + stdDev;
         autoMove();
     }
 
@@ -304,8 +319,6 @@
                 }
             }
         }
-        // foodx = 100;
-        // foodY = 200;
         return (foodX, foodY);
     }
     //生成随机颜色
@@ -419,11 +432,81 @@
 
     function gameOver() //游戏结束后关闭定时器重新开始重新开启定时器
     {
-        alert("Game over, your final score is: " + score);
+        // alert("Game over, your final score is: " + score);
         clearInterval(moveTimer);
         snakeBody.splice(0, snakeBody.length);
         foodArr.splice(0, foodArr.length); //游戏结束后清空数组
+        scoreArr[scoreArr.length] = score; //游戏结束后将该轮得分存入得分数组中
         start();
+    }
+
+    function stop()
+    {
+        if (round > 100)
+        {
+            alert("game over");
+        }
+    }
+
+    function getAveScore()
+    {
+        var totalScore = 0;
+        if (scoreArr.length > 0)
+        {
+            for (var i = 0; i < scoreArr.length; i++)
+            {
+                totalScore += scoreArr[i];
+            }
+            aveScore = Math.round(totalScore / scoreArr.length);
+        }
+        else
+        {
+            aveScore = score;
+        }
+        return aveScore;
+
+
+    }
+
+    function getMaxScore()
+    {
+        if (scoreArr.length > 0)
+        {
+            for (var i = 0; i < scoreArr.length; i++)
+            {
+                if (maxScore < scoreArr[i])
+                {
+                    maxScore = scoreArr[i];
+                }
+            }
+        }
+        else
+        {
+            maxScore = score;
+        }
+        return maxScore;
+    }
+
+    function getStandardDeviation()
+    {
+        var powSum = 0;
+        getAveScore();
+        if (scoreArr.length > 0)
+        {
+            for (var i = 0; i < scoreArr.length; i++)
+            {
+                var dev = scoreArr[i] - aveScore;
+                temp[i] = Math.pow(dev, 2);
+                powSum += temp[i];
+            }
+            stdDev = Math.sqrt(powSum / scoreArr.length);
+        }
+        else
+        {
+            stdDev = 0.00;
+        }
+
+        return stdDev;
     }
 
     function hasTouchedWall() //判断是否撞墙，可以贴墙走，不能撞墙
