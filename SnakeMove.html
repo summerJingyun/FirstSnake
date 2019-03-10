@@ -73,7 +73,7 @@
     scoreArr = new Array();
     var aveScore = 0;
     var maxScore = 0;
-    var stdDev = 0.00;
+    var stdDev = 0;
     temp = new Array();
 
     initial(); //初始化
@@ -440,11 +440,21 @@
         start();
     }
 
-    function stop()
+    function stop() //100局结束后点击确定按钮重新开始新的100局
     {
         if (round > 100)
         {
+            snakeBody.splice(0, snakeBody.length);
+            foodArr.splice(0, foodArr.length); //游戏结束后清空数组
+            roundArr.splice(0, roundArr.length);
+            scoreArr.splice(0, scoreArr.length);
+            round = 0;
+            aveScore = 0;
+            maxScore = 0;
+            stdDev = 0;
+            start();
             alert("game over");
+            clearInterval(moveTimer);
         }
     }
 
@@ -500,10 +510,12 @@
                 powSum += temp[i];
             }
             stdDev = Math.sqrt(powSum / scoreArr.length);
+            stdDev = Math.floor(stdDev * 1000) / 1000;
+            stdDev = stdDev.toFixed(3); //保留小数点后三位小数
         }
         else
         {
-            stdDev = 0.00;
+            stdDev = 0;
         }
 
         return stdDev;
