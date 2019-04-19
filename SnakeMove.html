@@ -9,18 +9,21 @@
 <body>
     <canvas id="myCanvas" width="400" height="400" style="border:1px solid #c3c3c3;">
     </canvas>
-    <div id="myText" style="position:absolute;left:10px;top:420px">score:0</div>
+    <div id="myTextScore" style="position:absolute;left:10px;top:440px">score</div>
     <div class="container" style="position:absolute;left:350px;top:420px">
         <form>
             <button type="button" value="Restart" id="btn" onclick="onClickBtn()"> Restart</button>
         </form>
     </div>
+    <div id="myTextCurrentRound" style="position:absolute;left:10px;top:420px">currentRound</div>
+    <div id="myTextAveScore" style="position:absolute;left:10px;top:470px">aveScore</div>
+    <div id="myTextMaxScore" style="position:absolute;left:10px;top:500px">maxScore</div>
+    <div id="myTextStandardDeviation" style="position:absolute;left:10px;top:530px">standardDeviation</div>
     <script type="text/javascript">
     var myCanvas = document.getElementById("myCanvas");
-    var m_text = document.getElementById("score");
     var ctx = myCanvas.getContext("2d");
-    var canvasWidth = 400;
-    var canvasHeight = 400;
+    var canvasWidth = 40;
+    var canvasHeight = 40;
     var minMoveDelay = 0.01;
     var initialMoveDelay = 0.01;
     var moveDelay = initialMoveDelay;
@@ -41,8 +44,8 @@
     var direction;
     var snakeBody;
     var lastBody;
-    var headX = 200;
-    var headY = 200;
+    var headX = 30;
+    var headY = 20;
     var newHeadX, newHeadY;
     var moveTimer;
     var intervalCount = 0;
@@ -52,31 +55,28 @@
     var isColorfulFood;
     var actualColor;
     var previousColor;
-    var multipleFoodLength = 3;
+    var multipleFoodLength = 1;
     var A = 100;
     var B = 60;
     var C = 100;
     var cArray = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
     foodArr = new Array();
     snakeBody = new Array();
-    // var snakeBody = [
-    //     [200, 200],
-    //     [190, 200],
-    //     [190, 210],
-    //     [200, 210],
-    //     [210, 210],
-    //     [220, 210],
-    //     [220, 200],
-    //     [220, 190],
-    //     [210, 190],
-    //     [200, 190],
-    //     [190, 190]
-    // ]
-
     var distanceX;
     var distanceX;
-
     var reverseDirection;
+    var round = 0;
+    roundArr = new Array();
+    scoreArr = new Array();
+    var aveScore = 0;
+    var maxScore = 0;
+    var stdDev = 0;
+    temp = new Array();
+
+    pathArray = new Array(); //存储所有路径数组
+    path = new Array();
+    // visitedArray = new Array();
+
 
     initial(); //初始化
     start();
@@ -88,13 +88,13 @@
 
     function start()
     {
-        moveTimer = setInterval("onTick()", 10);
+        // moveTimer = setInterval("onTick()", 10);
         direction = Direction.right;
         ctx.fillStyle = "grey";
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
         score = 0; //游戏结束重新开始分数清零
         moveDelay = initialMoveDelay;
-        myText.innerHTML = "score:" + score;
+        myTextScore.innerHTML = "score:" + score;
         for (var i = 0; i < initalSnakeLength; i++)
         {
             snakeBody[i] = new Array();
@@ -104,15 +104,29 @@
         }
         drawDot(snakeBody[0][0], snakeBody[0][1], "blue") //初始化将蛇头画蓝，蛇身画黑
         spawnFood();
+        // console.log("foodArr:" + foodArr);
+        round++;
+        myTextCurrentRound.innerHTML = "currentRound:" + round;
+        roundArr[roundArr.length] = round; //游戏开始时将局数记入数组中
+        myTextAveScore.innerHTML = "aveScore:" + aveScore;
+        myTextMaxScore.innerHTML = "maxScore:" + maxScore;
+        myTextStandardDeviation.innerHTML = "standardDeviation:" + stdDev;
+
+        path.push(new Array(snakeBody[0][0], snakeBody[0][1]));
+        findPath(path);
+
     }
 
     function onClickBtn() //点击restart按钮重新开始游戏
     {
-        clearInterval(moveTimer);
-        snakeBody.splice(0, snakeBody.length);
-        foodArr.splice(0, foodArr.length); //重新开始时清空数组
-        start();
-        // hasSetInternal = false;
+        gameOver();
+        getAveScore();
+        getMaxScore();
+        getStandardDeviation();
+        myTextScore.innerHTML = "score:" + score;
+        myTextAveScore.innerHTML = "aveScore:" + aveScore;
+        myTextMaxScore.innerHTML = "maxScore:" + maxScore;
+        myTextStandardDeviation.innerHTML = "standardDeviation:" + stdDev;
     }
 
     function onLogicTick()
@@ -124,20 +138,22 @@
                 drawRandomColorFood(foodArr[i][0], foodArr[i][1]);
             }
         }
-
-        autoSelectDirection();
-
+        getAveScore();
+        getMaxScore();
+        getStandardDeviation();
         if (isDead())
         {
             gameOver();
+            stop();
             return;
         }
-
         lastBody = rememberLastBody(snakeBody);
         hasAteFood(); //吃到食物后加分且生成新的食物，重新判断方向
         trySpeedUp(); //吃到食物后加速
-        myText.innerHTML = "score:" + score;
-        autoMove();
+        myTextScore.innerHTML = "score:" + score;
+        myTextAveScore.innerHTML = "aveScore:" + aveScore;
+        myTextMaxScore.innerHTML = "maxScore:" + maxScore;
+        myTextStandardDeviation.innerHTML = "standardDeviation:" + stdDev;
     }
 
     function onTick()
@@ -193,7 +209,6 @@
         {
             direction = directionPrevious; //判断当按下按键， 若蛇朝该方向走会踩到蛇身时，不让它朝此方向走，而继续按照原来的方向走
         }
-
     }
 
     function instantTurnDirection()
@@ -209,7 +224,6 @@
             intervalCount = 0; //无法保证按下按钮的瞬间是否是intervalCount=0的时刻，因此按下按钮后重新计数保证后续前进速度正确
             lastBody = rememberLastBody(snakeBody); //立即转向后蛇尾发生变化，重新获取新值
         }
-
         for (var i = 0; i < foodArr.length; i++) //立即转向若吃到食物加分
         {
             if ((snakeBody[0][0] == foodArr[i][0]) && (snakeBody[0][1] == foodArr[i][1]))
@@ -288,25 +302,26 @@
     //生成随机食物,判断食物是否压到身子，压到则重新生成
     function currentFoodPosition()
     {
-        var lengthX = canvasWidth / gridSize;
-        var lengthY = canvasHeight / gridSize;
-        var isSuccess = false;
-        while (!isSuccess)
-        {
-            foodX = parseInt(Math.random() * lengthX) * gridSize;
-            foodY = parseInt(Math.random() * lengthY) * gridSize;
-            isSuccess = true;
-            for (var i = 0; i < snakeBody.length; i++)
-            {
-                if ((foodX == snakeBody[i][0]) && (foodY == snakeBody[i][1]))
-                {
-                    isSuccess = false;
-                }
-            }
-        }
-        // foodx = 100;
-        // foodY = 200;
+        // var lengthX = canvasWidth / gridSize;
+        // var lengthY = canvasHeight / gridSize;
+        // var isSuccess = false;
+        // while (!isSuccess)
+        // {
+        //     foodX = parseInt(Math.random() * lengthX) * gridSize;
+        //     foodY = parseInt(Math.random() * lengthY) * gridSize;
+        //     isSuccess = true;
+        //     for (var i = 0; i < snakeBody.length; i++)
+        //     {
+        //         if ((foodX == snakeBody[i][0]) && (foodY == snakeBody[i][1]))
+        //         {
+        //             isSuccess = false;
+        //         }
+        //     }
+        // }
+        foodX = 10;
+        foodY = 0;
         return (foodX, foodY);
+
     }
     //生成随机颜色
     function getColorRandom()
@@ -387,7 +402,6 @@
             if ((newHeadX == foodArr[i][0]) && (newHeadY == foodArr[i][1]))
             {
                 foodArr.splice(i, 1);
-                autoMove();
                 addBody(snakeBody, lastBody);
                 if (isColorfulFood)
                 {
@@ -402,7 +416,6 @@
         if (foodArr.length <= 0)
         {
             spawnFood();
-            autoSelectDirection(); //当食物被吃完后生成新的食物，重新选择方向
         }
     }
 
@@ -414,16 +427,95 @@
 
     function isDead()
     {
-        return (hasTouchedWall() || headTouchedBody())
+        return (hasTouchedWall() || headTouchedBody());
     }
 
     function gameOver() //游戏结束后关闭定时器重新开始重新开启定时器
     {
-        alert("Game over, your final score is: " + score);
+        // alert("Game over, your final score is: " + score);
         clearInterval(moveTimer);
         snakeBody.splice(0, snakeBody.length);
         foodArr.splice(0, foodArr.length); //游戏结束后清空数组
+        scoreArr[scoreArr.length] = score; //游戏结束后将该轮得分存入得分数组中
         start();
+    }
+
+    function stop() //100局结束后点击确定按钮重新开始新的100局
+    {
+        if (round > 100)
+        {
+            snakeBody.splice(0, snakeBody.length);
+            foodArr.splice(0, foodArr.length); //游戏结束后清空数组
+            roundArr.splice(0, roundArr.length);
+            scoreArr.splice(0, scoreArr.length);
+            round = 0;
+            aveScore = 0;
+            maxScore = 0;
+            stdDev = 0;
+            start();
+            alert("game over");
+            clearInterval(moveTimer);
+        }
+    }
+
+    function getAveScore()
+    {
+        var totalScore = 0;
+        if (scoreArr.length > 0)
+        {
+            for (var i = 0; i < scoreArr.length; i++)
+            {
+                totalScore += scoreArr[i];
+            }
+            aveScore = Math.round(totalScore / scoreArr.length);
+        }
+        else
+        {
+            aveScore = score;
+        }
+        return aveScore;
+    }
+
+    function getMaxScore()
+    {
+        if (scoreArr.length > 0)
+        {
+            for (var i = 0; i < scoreArr.length; i++)
+            {
+                if (maxScore < scoreArr[i])
+                {
+                    maxScore = scoreArr[i];
+                }
+            }
+        }
+        else
+        {
+            maxScore = score;
+        }
+        return maxScore;
+    }
+
+    function getStandardDeviation()
+    {
+        var powSum = 0;
+        getAveScore();
+        if (scoreArr.length > 0)
+        {
+            for (var i = 0; i < scoreArr.length; i++)
+            {
+                var dev = scoreArr[i] - aveScore;
+                temp[i] = Math.pow(dev, 2);
+                powSum += temp[i];
+            }
+            stdDev = Math.sqrt(powSum / scoreArr.length);
+            stdDev = Math.floor(stdDev * 1000) / 1000;
+            stdDev = stdDev.toFixed(3); //保留小数点后三位小数
+        }
+        else
+        {
+            stdDev = 0;
+        }
+        return stdDev;
     }
 
     function hasTouchedWall() //判断是否撞墙，可以贴墙走，不能撞墙
@@ -467,96 +559,154 @@
         }
     }
 
-    /*走的原则是靠近食物，先水平后竖直。假设开始时食物在右上方，首先根据水平相对位置，判定蛇的方向为右，走到水平方向与食物对齐后再走竖直方向，直至吃到食物。
-    如果向右走会踩身子放弃，根据竖直方向判定蛇的方向为上，若向上走还是会踩到身子放弃，说明此时蛇不能先走右和上。采用迂回战术，先让蛇向左走，如果向左走还踩
-    身子放弃左，让其向下走，若此时都行不通则无路可走，死亡。*/
-
-    function autoSelectHorizontalDirction()
+    function findPath(x_path)
     {
-        if (distanceX > 0)
+        var currentPositionX = x_path[x_path.length - 1][0];
+        var currentPositionY = x_path[x_path.length - 1][1];
+        if (isSafePosition(currentPositionX, currentPositionY - gridSize))
         {
-            direction = Direction.right;
-            reverseDirection = Direction.left;
-        }
-        else if (distanceX < 0)
-        {
-            direction = Direction.left;
-            reverseDirection = Direction.right;
-        }
-        if (isDead())
-        {
-            if (distanceY < 0)
+            pathUp = new Array();
+            pathUp = x_path.concat();
+            if (isNotInPath(currentPositionX, currentPositionY - gridSize, pathUp))
             {
-                direction = Direction.up;
-                if (isDead())
+                pathUp.push(new Array(currentPositionX, currentPositionY - gridSize));
+                if (!((currentPositionX == foodX) && (currentPositionY - gridSize == foodY)))
                 {
-                    direction = reverseDirection;
-                    if (isDead())
-                    {
-                        direction = Direction.down;
-                    }
+                    findPath(pathUp);
                 }
+                else
+                {
+                    pathArray.push(pathUp);
+
+                }
+            }
+        }
+
+        if (isSafePosition(currentPositionX, currentPositionY + gridSize))
+        {
+            pathDown = new Array();
+            pathDown = x_path.concat();
+            if (isNotInPath(currentPositionX, currentPositionY + gridSize, pathDown))
+            {
+                pathDown.push(new Array(currentPositionX, currentPositionY + gridSize));
+                if (!((currentPositionX == foodX) && (currentPositionY + gridSize == foodY)))
+                {
+                    findPath(pathDown);
+                }
+                else
+                {
+                    pathArray.push(pathDown);
+                }
+            }
+        }
+
+        if (isSafePosition(currentPositionX - gridSize, currentPositionY))
+        {
+            pathLeft = new Array();
+            pathLeft = x_path.concat();
+            if (isNotInPath(currentPositionX - gridSize, currentPositionY, pathLeft))
+            {
+                pathLeft.push(new Array(currentPositionX - gridSize, currentPositionY));
+                if (!((currentPositionX - gridSize == foodX) && (currentPositionY == foodY)))
+                {
+                    findPath(pathLeft);
+                }
+                else
+                {
+                    pathArray.push(pathLeft);
+                }
+            }
+        }
+
+        //    if (isSafePosition(currentPositionX + gridSize, currentPositionY))
+        // {
+        //     if(isNotInPath(currentPositionX + gridSize, currentPositionY,x_path))
+        //     {
+        //         x_path.push(new Array(currentPositionX + gridSize, currentPositionY));
+        //         if (!((currentPositionX + gridSize == foodX) && (currentPositionY == foodY)))
+        //         {
+        //             findPath(x_path);
+        //         }
+        //     } 
+        //      else
+        //     {
+        //         pathArray.pop(x_path);
+        //     }
+        // }
+
+        if (isSafePosition(currentPositionX + gridSize, currentPositionY))
+        {
+            pathRight = new Array();
+            pathRight = x_path.concat();
+            if (isNotInPath(currentPositionX + gridSize, currentPositionY, pathRight))
+            {
+                pathRight.push(new Array(currentPositionX + gridSize, currentPositionY));
+                if (!((currentPositionX + gridSize == foodX) && (currentPositionY == foodY)))
+                {
+                    findPath(pathRight);
+                }
+                else
+                {
+                    pathArray.push(pathRight);
+                }
+            }
+            //  else
+            // {
+            //     pathArray.pop(x_path);
+            // }
+        }
+
+        return pathArray;
+    }
+
+    arr = new Array();
+    arr = pathArray;
+
+    function isSafePosition(x, y)
+    {
+        var count = 0;
+        var isSafePosition = false;
+        if (
+            x >= 0 &&
+            y >= 0 &&
+            (x <= canvasWidth - gridSize) &&
+            (y <= canvasHeight - gridSize)
+        )
+        {
+            for (var i = 1; i < snakeBody.length; i++)
+            {
+                if ((x == snakeBody[i][0]) && (y == snakeBody[i][1]))
+                {
+                    break;
+                }
+                else
+                {
+                    count++;
+                }
+            }
+            if (count == snakeBody.length - 1)
+            {
+                isSafePosition = true;
+            }
+        }
+        return isSafePosition;
+    }
+
+    function isNotInPath(x, y, path)
+    {
+        var count = 0;
+        for (var i = 0; i < path.length; i++)
+        {
+            if ((x == path[i][0]) && (y == path[i][1]))
+            {
+                break;
             }
             else
             {
-                direction = Direction.down;
-                if (isDead())
-                {
-                    direction = reverseDirection;
-                    if (isDead())
-                    {
-                        direction = Direction.up;
-                    }
-                }
+                count++;
             }
         }
-
-    }
-
-    function autoSelectVerticalDirction()
-    {
-        if (distanceY > 0)
-        {
-            direction = Direction.down;
-            reverseDirection = Direction.up;
-        }
-        else if (distanceY < 0)
-        {
-            direction = Direction.up;
-            reverseDirection = Direction.down;
-        }
-        if (isDead())
-        {
-            direction = Direction.left;
-            if (isDead())
-            {
-                direction = Direction.right;
-                if (isDead())
-                {
-                    direction = reverseDirection;
-                }
-            }
-        }
-
-    }
-
-    function autoSelectDirection()
-    {
-        distanceX = foodArr[0][0] - snakeBody[0][0];
-        distanceY = foodArr[0][1] - snakeBody[0][1];
-        if (distanceX != 0)
-        {
-            autoSelectHorizontalDirction();
-        }
-        else
-        {
-            autoSelectVerticalDirction();
-        }
-    }
-
-    function autoMove()
-    {
-        move(direction);
+        return (count == path.length);
     }
     </script>
 </body>
